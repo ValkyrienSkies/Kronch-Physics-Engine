@@ -24,6 +24,9 @@ object VoxelVoxelCollider : Collider<VoxelShape, VoxelShape> {
 
         val body1To0Transform = Matrix4d()
 
+        body1To0Transform.translate(
+            -body0Shape.shapeOffset.x, -body0Shape.shapeOffset.y, -body0Shape.shapeOffset.z
+        )
         body1To0Transform.rotate(
             Quaterniond(body0Transform.q).invert()
         )
@@ -33,6 +36,9 @@ object VoxelVoxelCollider : Collider<VoxelShape, VoxelShape> {
             body1Transform.p.z() - body0Transform.p.z()
         )
         body1To0Transform.rotate(body1Transform.q)
+        body1To0Transform.translate(
+            body1Shape.shapeOffset.x, body1Shape.shapeOffset.y, body1Shape.shapeOffset.z
+        )
 
         for (surfaceVoxel in body1Shape.getSurfaceVoxels()) {
             forEachCorner { xCorner: Int, yCorner: Int, zCorner: Int ->
