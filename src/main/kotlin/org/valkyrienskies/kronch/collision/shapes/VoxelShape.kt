@@ -1,5 +1,6 @@
 package org.valkyrienskies.kronch.collision.shapes
 
+import org.joml.Vector3d
 import org.joml.Vector3i
 import org.joml.Vector3ic
 import org.valkyrienskies.kronch.collision.shapes.VoxelShape.CollisionVoxelType.AIR
@@ -17,6 +18,9 @@ class VoxelShape(
 ) : CollisionShape {
 
     private val grid: ByteArray
+
+    // Used in collision to offset the grid of this voxel shape
+    var shapeOffset = Vector3d()
 
     init {
         val gridSize =
@@ -41,10 +45,10 @@ class VoxelShape(
         return (posX - gridMin.x()) + xLen * (posY - gridMin.y()) + xLen * yLen * (posZ - gridMin.z())
     }
 
-    private fun setVoxelType(pos: Vector3ic, newVoxelType: VoxelType): Boolean =
+    fun setVoxelType(pos: Vector3ic, newVoxelType: VoxelType): Boolean =
         setVoxelType(pos.x(), pos.y(), pos.z(), newVoxelType)
 
-    private fun setVoxelType(posX: Int, posY: Int, posZ: Int, newVoxelType: VoxelType): Boolean {
+    fun setVoxelType(posX: Int, posY: Int, posZ: Int, newVoxelType: VoxelType): Boolean {
         val prevVoxelType = getVoxelType(posX, posY, posZ)
         if (newVoxelType == prevVoxelType) return false // Nothing changed
         val index = toIndex(posX, posY, posZ)
