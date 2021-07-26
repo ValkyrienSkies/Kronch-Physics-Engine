@@ -34,7 +34,7 @@ class OpenGLWindow {
     // FloatBuffer for transferring matrices to OpenGL
     private var floatBuffer: FloatBuffer = BufferUtils.createFloatBuffer(16)
 
-    private val physicsWorld = PhysicsWorld()
+    private val physicsWorld: PhysicsWorld = PhysicsWorldTest()
 
     fun run() {
         try {
