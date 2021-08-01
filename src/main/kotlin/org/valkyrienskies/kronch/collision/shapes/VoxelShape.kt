@@ -31,9 +31,9 @@ class VoxelShape(
     }
 
     private fun isPosInGrid(posX: Int, posY: Int, posZ: Int): Boolean {
-        return posX >= gridMin.x() && posX <= gridMax.x()
-            && posY >= gridMin.y() && posY <= gridMax.y()
-            && posZ >= gridMin.z() && posZ <= gridMax.z()
+        return posX >= gridMin.x() && posX <= gridMax.x() &&
+            posY >= gridMin.y() && posY <= gridMax.y() &&
+            posZ >= gridMin.z() && posZ <= gridMax.z()
     }
 
     private fun toIndex(posX: Int, posY: Int, posZ: Int): Int {
