@@ -116,6 +116,12 @@ tasks {
     }
 }
 
+// Publish javadoc and sources to maven
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
 publishing {
     repositories {
         val ghpUser = (project.findProperty("gpr.user") ?: System.getenv("USERNAME")) as String?
