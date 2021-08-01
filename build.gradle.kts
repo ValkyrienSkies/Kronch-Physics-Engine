@@ -124,7 +124,7 @@ publishing {
         if (ghpUser != null && ghpPassword != null) {
             maven {
                 name = "GithubPackages"
-                url = uri("https://maven.pkg.github.com/ValkyrienSkies/Valkyrien-Skies")
+                url = uri("https://maven.pkg.github.com/ValkyrienSkies/Kronch-Physics-Engine")
                 credentials {
                     username = ghpUser
                     password = ghpPassword
