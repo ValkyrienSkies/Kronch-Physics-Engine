@@ -9,7 +9,7 @@ plugins {
     `java-library`
 }
 
-group = "org.valkyrienskies.kronch"
+group = "org.valkyrienskies.krunch"
 // Determine the version
 if (project.hasProperty("CustomReleaseVersion")) {
     version = project.property("CustomReleaseVersion") as String
@@ -124,7 +124,7 @@ publishing {
         if (ghpUser != null && ghpPassword != null) {
             maven {
                 name = "GithubPackages"
-                url = uri("https://maven.pkg.github.com/ValkyrienSkies/Kronch-Physics-Engine")
+                url = uri("https://maven.pkg.github.com/ValkyrienSkies/Krunch-Physics-Engine")
                 credentials {
                     username = ghpUser
                     password = ghpPassword
@@ -148,7 +148,7 @@ publishing {
         publications {
             create<MavenPublication>("maven") {
                 groupId = "org.valkyrienskies"
-                artifactId = "kronch"
+                artifactId = "krunch"
                 version = project.version as String
 
                 from(components["java"])

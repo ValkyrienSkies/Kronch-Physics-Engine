@@ -1,10 +1,10 @@
-package org.valkyrienskies.kronch.testmath
+package org.valkyrienskies.krunch.testmath
 
 import org.joml.Vector3d
 import org.junit.jupiter.api.Test
-import org.valkyrienskies.kronch.Body
-import org.valkyrienskies.kronch.Pose
-import org.valkyrienskies.kronch.applyBodyPairCorrection
+import org.valkyrienskies.krunch.Body
+import org.valkyrienskies.krunch.Pose
+import org.valkyrienskies.krunch.applyBodyPairCorrection
 import kotlin.math.abs
 
 internal class TestBodyCorrection {

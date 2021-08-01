@@ -1,13 +1,13 @@
-package org.valkyrienskies.kronch
+package org.valkyrienskies.krunch
 
 import org.joml.Quaterniond
 import org.joml.Vector3d
 import org.joml.Vector3dc
-import org.valkyrienskies.kronch.collision.CollisionResultc
-import org.valkyrienskies.kronch.collision.colliders.VoxelVoxelCollider
-import org.valkyrienskies.kronch.collision.shapes.BoxShape
-import org.valkyrienskies.kronch.collision.shapes.CollisionShape
-import org.valkyrienskies.kronch.collision.shapes.VoxelShape
+import org.valkyrienskies.krunch.collision.CollisionResultc
+import org.valkyrienskies.krunch.collision.colliders.VoxelVoxelCollider
+import org.valkyrienskies.krunch.collision.shapes.BoxShape
+import org.valkyrienskies.krunch.collision.shapes.CollisionShape
+import org.valkyrienskies.krunch.collision.shapes.VoxelShape
 import kotlin.math.abs
 import kotlin.math.asin
 import kotlin.math.max

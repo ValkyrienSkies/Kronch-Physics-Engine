@@ -1,4 +1,4 @@
-package org.valkyrienskies.kronch.collision.colliders
+package org.valkyrienskies.krunch.collision.colliders
 
 import kotlin.math.abs
 

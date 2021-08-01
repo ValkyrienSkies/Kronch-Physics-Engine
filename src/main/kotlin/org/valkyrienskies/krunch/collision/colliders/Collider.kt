@@ -1,8 +1,8 @@
-package org.valkyrienskies.kronch.collision.colliders
+package org.valkyrienskies.krunch.collision.colliders
 
-import org.valkyrienskies.kronch.Pose
-import org.valkyrienskies.kronch.collision.CollisionResultc
-import org.valkyrienskies.kronch.collision.shapes.CollisionShape
+import org.valkyrienskies.krunch.Pose
+import org.valkyrienskies.krunch.collision.CollisionResultc
+import org.valkyrienskies.krunch.collision.shapes.CollisionShape
 
 /**
  * Computes the collision points between two collision shapes.

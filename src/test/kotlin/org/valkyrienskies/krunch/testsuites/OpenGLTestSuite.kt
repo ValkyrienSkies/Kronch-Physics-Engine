@@ -1,4 +1,4 @@
-package org.valkyrienskies.kronch.testsuites
+package org.valkyrienskies.krunch.testsuites
 
 fun main(args: Array<String>) {
     OpenGLTestSuite.main(args)

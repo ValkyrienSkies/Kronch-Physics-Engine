@@ -1,4 +1,4 @@
-package org.valkyrienskies.kronch.collision
+package org.valkyrienskies.krunch.collision
 
 import org.joml.Vector3dc
 

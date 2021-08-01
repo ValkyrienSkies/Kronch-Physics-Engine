@@ -1,3 +1,3 @@
-package org.valkyrienskies.kronch.collision
+package org.valkyrienskies.krunch.collision
 
 class NotCollidingException(message: String) : Exception(message)
