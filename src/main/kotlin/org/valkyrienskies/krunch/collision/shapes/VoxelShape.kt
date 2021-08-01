@@ -1,14 +1,14 @@
-package org.valkyrienskies.kronch.collision.shapes
+package org.valkyrienskies.krunch.collision.shapes
 
 import org.joml.Vector3d
 import org.joml.Vector3i
 import org.joml.Vector3ic
-import org.valkyrienskies.kronch.collision.shapes.VoxelShape.CollisionVoxelType.AIR
-import org.valkyrienskies.kronch.collision.shapes.VoxelShape.CollisionVoxelType.INTERIOR
-import org.valkyrienskies.kronch.collision.shapes.VoxelShape.CollisionVoxelType.PROXIMITY
-import org.valkyrienskies.kronch.collision.shapes.VoxelShape.CollisionVoxelType.SURFACE
-import org.valkyrienskies.kronch.collision.shapes.VoxelShape.VoxelType.EMPTY
-import org.valkyrienskies.kronch.collision.shapes.VoxelShape.VoxelType.FULL
+import org.valkyrienskies.krunch.collision.shapes.VoxelShape.CollisionVoxelType.AIR
+import org.valkyrienskies.krunch.collision.shapes.VoxelShape.CollisionVoxelType.INTERIOR
+import org.valkyrienskies.krunch.collision.shapes.VoxelShape.CollisionVoxelType.PROXIMITY
+import org.valkyrienskies.krunch.collision.shapes.VoxelShape.CollisionVoxelType.SURFACE
+import org.valkyrienskies.krunch.collision.shapes.VoxelShape.VoxelType.EMPTY
+import org.valkyrienskies.krunch.collision.shapes.VoxelShape.VoxelType.FULL
 import kotlin.experimental.and
 import kotlin.experimental.or
 

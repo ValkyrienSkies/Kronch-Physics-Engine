@@ -1,4 +1,4 @@
-package org.valkyrienskies.kronch.collision.shapes
+package org.valkyrienskies.krunch.collision.shapes
 
 /**
  * The shape of an object in the physics engine.

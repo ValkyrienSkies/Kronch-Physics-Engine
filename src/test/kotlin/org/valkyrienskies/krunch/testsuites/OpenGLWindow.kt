@@ -1,4 +1,4 @@
-package org.valkyrienskies.kronch.testsuites
+package org.valkyrienskies.krunch.testsuites
 
 import org.joml.AxisAngle4d
 import org.joml.Matrix4f
@@ -11,8 +11,8 @@ import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
 import org.lwjgl.system.MemoryUtil
-import org.valkyrienskies.kronch.PhysicsWorld
-import org.valkyrienskies.kronch.collision.shapes.VoxelShape
+import org.valkyrienskies.krunch.PhysicsWorld
+import org.valkyrienskies.krunch.collision.shapes.VoxelShape
 import java.nio.FloatBuffer
 
 /**

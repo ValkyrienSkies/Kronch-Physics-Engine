@@ -1,15 +1,15 @@
-package org.valkyrienskies.kronch.testsuites
+package org.valkyrienskies.krunch.testsuites
 
 import org.joml.Quaterniond
 import org.joml.Vector3d
 import org.joml.Vector3i
 import org.joml.Vector3ic
-import org.valkyrienskies.kronch.Body
-import org.valkyrienskies.kronch.Joint
-import org.valkyrienskies.kronch.JointType.SPHERICAL
-import org.valkyrienskies.kronch.PhysicsWorld
-import org.valkyrienskies.kronch.Pose
-import org.valkyrienskies.kronch.collision.shapes.VoxelShape
+import org.valkyrienskies.krunch.Body
+import org.valkyrienskies.krunch.Joint
+import org.valkyrienskies.krunch.JointType.SPHERICAL
+import org.valkyrienskies.krunch.PhysicsWorld
+import org.valkyrienskies.krunch.Pose
+import org.valkyrienskies.krunch.collision.shapes.VoxelShape
 
 class PhysicsWorldTest : PhysicsWorld() {
 
@@ -114,7 +114,7 @@ class PhysicsWorldTest : PhysicsWorld() {
     override fun simulate(timeStep: Double) {
         val gravity = Vector3d(0.0, -10.0, 0.0)
         val numSubsteps = 40
-        org.valkyrienskies.kronch.simulate(bodies, joints, timeStep, numSubsteps, gravity)
+        org.valkyrienskies.krunch.simulate(bodies, joints, timeStep, numSubsteps, gravity)
 
         val groundBody = bodies[0]
         groundBody.pose.q.rotateY(timeStep * Math.PI / 4.0)

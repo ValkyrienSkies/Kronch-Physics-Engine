@@ -1,4 +1,4 @@
-package org.valkyrienskies.kronch.collision
+package org.valkyrienskies.krunch.collision
 
 /**
  * Stores the collision points between two collision shapes.

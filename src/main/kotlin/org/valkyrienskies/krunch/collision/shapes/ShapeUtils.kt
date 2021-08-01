@@ -1,7 +1,7 @@
-package org.valkyrienskies.kronch.collision.shapes
+package org.valkyrienskies.krunch.collision.shapes
 
 import org.joml.primitives.AABBdc
-import org.valkyrienskies.kronch.collision.colliders.CollisionRange
+import org.valkyrienskies.krunch.collision.colliders.CollisionRange
 import kotlin.math.max
 import kotlin.math.min
 

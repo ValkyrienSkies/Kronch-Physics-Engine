@@ -1,4 +1,4 @@
-package org.valkyrienskies.kronch
+package org.valkyrienskies.krunch
 
 import org.joml.Vector3d
 
