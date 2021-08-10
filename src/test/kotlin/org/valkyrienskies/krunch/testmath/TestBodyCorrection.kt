@@ -1,6 +1,7 @@
 package org.valkyrienskies.krunch.testmath
 
 import org.joml.Vector3d
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.valkyrienskies.krunch.Body
 import org.valkyrienskies.krunch.Pose
@@ -39,6 +40,6 @@ internal class TestBodyCorrection {
 
         val newVelocityAtPoint = body.getVelocityAt(collisionPointInGlobalCoordinates)
 
-        assert(abs(normal.dot(newVelocityAtPoint)) < 1e-4)
+        assertTrue(abs(normal.dot(newVelocityAtPoint)) < 1e-4)
     }
 }
