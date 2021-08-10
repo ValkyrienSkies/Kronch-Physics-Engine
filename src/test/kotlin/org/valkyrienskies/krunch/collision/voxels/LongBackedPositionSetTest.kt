@@ -7,7 +7,7 @@ import org.junit.jupiter.api.RepeatedTest
 import kotlin.random.Random
 import kotlin.random.nextInt
 
-internal class ListBackedPositionSetTest {
+internal class LongBackedPositionSetTest {
 
     @RepeatedTest(100)
     fun testSettingAndGetting() {
@@ -18,7 +18,7 @@ internal class ListBackedPositionSetTest {
         val maxY = Random.nextInt(minY..100000)
         val maxZ = Random.nextInt(minZ..100000)
 
-        val positionSet = ListBackedPositionSet()
+        val positionSet = LongBackedPositionSet()
 
         val setVoxels = HashSet<Vector3ic>()
 

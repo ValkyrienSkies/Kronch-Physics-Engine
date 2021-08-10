@@ -4,7 +4,7 @@ import it.unimi.dsi.fastutil.longs.Long2IntMap
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.fastutil.longs.LongArrayList
 
-class ListBackedPositionSet : PositionSet {
+class LongBackedPositionSet : PositionSet {
 
     private val positionsList = LongArrayList()
     private val positionToListIndexMap: Long2IntMap = Long2IntOpenHashMap()

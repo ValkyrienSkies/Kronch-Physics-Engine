@@ -2,7 +2,7 @@ package org.valkyrienskies.krunch.collision.voxels
 
 class VoxelGridWithPositionSet(private val baseVoxelGrid: VoxelGrid) : IVoxelGrid {
 
-    private val positionSet: ListBackedPositionSet = ListBackedPositionSet()
+    private val positionSet: LongBackedPositionSet = LongBackedPositionSet()
 
     override fun setVoxelState(x: Int, y: Int, z: Int, setVoxel: Boolean): Boolean {
         if (setVoxel) {
