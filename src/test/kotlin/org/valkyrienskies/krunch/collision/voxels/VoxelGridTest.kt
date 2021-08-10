@@ -3,13 +3,13 @@ package org.valkyrienskies.krunch.collision.voxels
 import org.joml.Vector3i
 import org.joml.Vector3ic
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.RepeatedTest
 import kotlin.random.Random
 import kotlin.random.nextInt
 
 internal class VoxelGridTest {
 
-    @Test
+    @RepeatedTest(100)
     fun testSettingAndGetting() {
         val minX = Random.nextInt(-100..-1)
         val minY = Random.nextInt(-100..-1)

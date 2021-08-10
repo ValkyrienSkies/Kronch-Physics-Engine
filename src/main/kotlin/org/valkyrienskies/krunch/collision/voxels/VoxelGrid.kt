@@ -3,9 +3,8 @@ package org.valkyrienskies.krunch.collision.voxels
 import java.util.BitSet
 
 class VoxelGrid(
-    private val minX: Int, private val minY: Int, private val minZ: Int, private val maxX: Int, private val maxY: Int,
-    private val maxZ: Int
-) {
+    val minX: Int, val minY: Int, val minZ: Int, val maxX: Int, val maxY: Int, val maxZ: Int
+) : IVoxelGrid {
     private val size: Int
     private val voxelDataBitSet: BitSet
 
@@ -19,13 +18,16 @@ class VoxelGrid(
         voxelDataBitSet = BitSet(size)
     }
 
-    internal fun setVoxelState(x: Int, y: Int, z: Int, setVoxel: Boolean) {
+    override fun setVoxelState(x: Int, y: Int, z: Int, setVoxel: Boolean): Boolean {
         assertPosWithinGrid(x, y, z)
         val bitIndex = posToBitIndex(x, y, z)
+        val originalVoxelState = voxelDataBitSet[bitIndex]
         voxelDataBitSet.set(bitIndex, setVoxel)
+        // Return true if the voxel state changed, false otherwise.
+        return originalVoxelState != setVoxel
     }
 
-    internal fun getVoxelState(x: Int, y: Int, z: Int): Boolean {
+    override fun getVoxelState(x: Int, y: Int, z: Int): Boolean {
         assertPosWithinGrid(x, y, z)
         val bitIndex = posToBitIndex(x, y, z)
         return voxelDataBitSet.get(bitIndex)
