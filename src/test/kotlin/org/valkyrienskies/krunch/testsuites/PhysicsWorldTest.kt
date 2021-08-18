@@ -9,7 +9,7 @@ import org.valkyrienskies.krunch.Joint
 import org.valkyrienskies.krunch.JointType.SPHERICAL
 import org.valkyrienskies.krunch.PhysicsWorld
 import org.valkyrienskies.krunch.Pose
-import org.valkyrienskies.krunch.collision.shapes.VoxelShape
+import org.valkyrienskies.krunch.collision.shapes.NewVoxelShape
 
 class PhysicsWorldTest : PhysicsWorld() {
 
@@ -32,7 +32,7 @@ class PhysicsWorldTest : PhysicsWorld() {
 
         // groundBodyVoxels.add(Vector3i(0, 2, 0))
 
-        val singleVoxelShape = VoxelShape(listOf(Vector3i()))
+        val singleVoxelShape = NewVoxelShape.createNewVoxelShape(listOf(Vector3i()))
 
         val biggerShapeVoxels = ArrayList<Vector3ic>()
 
@@ -43,7 +43,7 @@ class PhysicsWorldTest : PhysicsWorld() {
         }
         biggerShapeVoxels.add(Vector3i(0, -1, 0))
 
-        val biggerVoxelShape = VoxelShape(biggerShapeVoxels)
+        val biggerVoxelShape = NewVoxelShape.createNewVoxelShape(biggerShapeVoxels)
 
         val firstBoxPose = Pose(Vector3d(0.0, 3.0, 0.0), Quaterniond())
         val firstBoxBody = Body(firstBoxPose)
@@ -63,7 +63,7 @@ class PhysicsWorldTest : PhysicsWorld() {
         val groundPose = Pose(Vector3d(0.0, 0.0, 0.0), Quaterniond().rotateAxis(Math.toRadians(20.0), 0.0, 1.0, 1.0))
         val groundBody = Body(groundPose)
         groundBody.setBox(boxSize)
-        groundBody.shape = VoxelShape(groundBodyVoxels)
+        groundBody.shape = NewVoxelShape.createNewVoxelShape(groundBodyVoxels)
         groundBody.isStatic = true
 
         // endregion
