@@ -1,6 +1,7 @@
 package org.valkyrienskies.krunch.collision.voxels
 
 import org.joml.Vector3d
+import org.joml.Vector3dc
 import kotlin.math.roundToInt
 
 interface IVoxelLayeredTSDF {
@@ -11,6 +12,8 @@ interface IVoxelLayeredTSDF {
 
     fun getVoxel(posX: Double, posY: Double, posZ: Double): Boolean =
         getVoxel(posX.roundToInt(), posY.roundToInt(), posZ.roundToInt())
+
+    fun getVoxel(pos: Vector3dc): Boolean = getVoxel(pos.x(), pos.y(), pos.z())
 
     fun forEachVoxel(function: (posX: Int, posY: Int, posZ: Int) -> Unit)
 

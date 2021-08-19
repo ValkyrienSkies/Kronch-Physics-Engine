@@ -14,6 +14,7 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
 import org.lwjgl.system.MemoryUtil
 import org.valkyrienskies.krunch.PhysicsWorld
+import org.valkyrienskies.krunch.collision.shapes.SphereShape
 import org.valkyrienskies.krunch.collision.shapes.TSDFVoxelShape
 import java.nio.FloatBuffer
 
@@ -205,6 +206,10 @@ class OpenGLWindow(
                         renderCube()
                         GL11.glPopMatrix()
                     }
+                } else if (bodyShape is SphereShape) {
+                    GL11.glPushMatrix()
+                    renderCube()
+                    GL11.glPopMatrix()
                 }
                 GL11.glPopMatrix()
             }

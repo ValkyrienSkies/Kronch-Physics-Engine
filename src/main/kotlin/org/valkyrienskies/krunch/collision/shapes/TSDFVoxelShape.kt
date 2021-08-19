@@ -6,6 +6,8 @@ import org.valkyrienskies.krunch.collision.voxels.BasicLayeredTSDF
 import org.valkyrienskies.krunch.collision.voxels.IVoxelLayeredTSDF
 
 class TSDFVoxelShape : CollisionShape {
+    override val sortIndex: Int = 0
+    
     // Used in collision to offset the grid of this voxel shape
     var shapeOffset = Vector3d()
 

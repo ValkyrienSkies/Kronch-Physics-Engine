@@ -4,10 +4,9 @@ import org.joml.Quaterniond
 import org.joml.Vector3d
 import org.joml.Vector3dc
 import org.valkyrienskies.krunch.collision.CollisionResultc
-import org.valkyrienskies.krunch.collision.colliders.TSDFVoxelTSDFVoxelCollider
-import org.valkyrienskies.krunch.collision.shapes.BoxShape
+import org.valkyrienskies.krunch.collision.colliders.ColliderResolver
 import org.valkyrienskies.krunch.collision.shapes.CollisionShape
-import org.valkyrienskies.krunch.collision.shapes.TSDFVoxelShape
+import org.valkyrienskies.krunch.collision.shapes.SphereShape
 import kotlin.math.abs
 import kotlin.math.asin
 import kotlin.math.max
@@ -95,8 +94,8 @@ class Body(_pose: Pose) {
 
     var isStatic = false
 
-    // Use a box shape by default
-    var shape: CollisionShape = BoxShape(Vector3d(.5, .5, .5))
+    // Use a sphere shape by default
+    var shape: CollisionShape = SphereShape(.5)
 
     fun setBox(size: Vector3d, density: Double = 1.0) {
         var mass = size.x * size.y * size.z * density
@@ -575,7 +574,7 @@ private fun resolveCollisions(collisions: List<CollisionData>, dt: Double, colli
                     // Setting it to 0 makes it too strong, setting it too high makes collisions mushy.
                     // We use 1e-5 by default because its a good middle ground.
                     applyBodyPairCorrection(
-                        body0, body1, corr, collisionCompliance, dt,
+                        body1, body0, corr, collisionCompliance, dt,
                         body0PointPosInGlobal, body1PointPosInGlobal, false
                     )
                     used = true
@@ -591,17 +590,22 @@ private fun solveCollisions(bodies: List<Body>): List<CollisionData> {
     val collisionDataList = ArrayList<CollisionData>()
     for (i in bodies.indices) {
         for (j in i + 1 until bodies.size) {
-            val body0 = bodies[i]
-            val body1 = bodies[j]
+            val body0: Body
+            val body1: Body
+            if (bodies[i].shape.sortIndex >= bodies[j].shape.sortIndex) {
+                body0 = bodies[i]
+                body1 = bodies[j]
+            } else {
+                body0 = bodies[j]
+                body1 = bodies[i]
+            }
 
             if (body0.isStatic and body1.isStatic) {
                 continue // Both bodies are static, don't bother to collide with both of them
             }
 
-            // For now assume both shapes are new voxel shapes
-            val collisionResult = TSDFVoxelTSDFVoxelCollider.computeCollisionBetweenShapes(
-                body0.shape as TSDFVoxelShape, body0.pose, body1.shape as TSDFVoxelShape, body1.pose
-            )
+            val collisionResult =
+                ColliderResolver.computeCollisionBetweenShapes(body0.shape, body0.pose, body1.shape, body1.pose)
 
             if (collisionResult != null && collisionResult.colliding) {
                 collisionDataList.add(CollisionData(body0, body1, collisionResult))
