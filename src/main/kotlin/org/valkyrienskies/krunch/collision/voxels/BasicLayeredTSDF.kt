@@ -42,17 +42,15 @@ class BasicLayeredTSDF : IVoxelLayeredTSDF {
                     if (voxelSolid xor isPointInsideSolidVoxel) {
                         computeClosestPoint(
                             posX, posY, posZ, voxelX, voxelY, voxelZ
-                        ) { skip: Boolean, absoluteDistanceSq: Double, closestX: Double, closestY: Double, closestZ: Double ->
-                            if (!skip) {
-                                if (!validOutput) {
+                        ) { absoluteDistanceSq: Double, closestX: Double, closestY: Double, closestZ: Double ->
+                            if (!validOutput) {
+                                closestPointOutput.set(closestX, closestY, closestZ)
+                                closestDistanceSq = absoluteDistanceSq
+                                validOutput = true
+                            } else {
+                                if (absoluteDistanceSq < closestDistanceSq) {
                                     closestPointOutput.set(closestX, closestY, closestZ)
                                     closestDistanceSq = absoluteDistanceSq
-                                    validOutput = true
-                                } else {
-                                    if (absoluteDistanceSq < closestDistanceSq) {
-                                        closestPointOutput.set(closestX, closestY, closestZ)
-                                        closestDistanceSq = absoluteDistanceSq
-                                    }
                                 }
                             }
                         }
@@ -66,7 +64,7 @@ class BasicLayeredTSDF : IVoxelLayeredTSDF {
 
     private inline fun computeClosestPoint(
         posX: Double, posY: Double, posZ: Double, voxelX: Int, voxelY: Int, voxelZ: Int,
-        function: (skip: Boolean, absoluteDistance: Double, closestX: Double, closestY: Double, closestZ: Double) -> Unit
+        function: (absoluteDistance: Double, closestX: Double, closestY: Double, closestZ: Double) -> Unit
     ) {
         val closestPointX = min(max(posX, voxelX - .5), voxelX + .5)
         val closestPointY = min(max(posY, voxelY - .5), voxelY + .5)
@@ -75,11 +73,7 @@ class BasicLayeredTSDF : IVoxelLayeredTSDF {
         val absoluteDistanceSq =
             (closestPointX - posX) * (closestPointX - posX) + (closestPointY - posY) * (closestPointY - posY) + (closestPointZ - posZ) * (closestPointZ - posZ)
 
-        if (absoluteDistanceSq < 1e-6) {
-            function(true, 0.0, 0.0, 0.0, 0.0)
-        } else {
-            function(false, absoluteDistanceSq, closestPointX, closestPointY, closestPointZ)
-        }
+        function(absoluteDistanceSq, closestPointX, closestPointY, closestPointZ)
     }
 
     override fun forEachVoxel(function: (posX: Int, posY: Int, posZ: Int) -> Unit) = voxelStorage.forEach(function)
