@@ -63,14 +63,16 @@ object TSDFVoxelTSDFVoxelCollider : Collider<TSDFVoxelShape, TSDFVoxelShape> {
                                 pointPosInBody0Coordinates.x(), pointPosInBody0Coordinates.y(),
                                 pointPosInBody0Coordinates.z()
                             )
-                        ) collisionNormalOutput.mul(-1.0)
-                        collisionNormalOutput as Vector3dc
+                        ) {
+                            collisionNormalOutput.mul(-1.0)
+                        }
+                        collisionNormalOutput.normalize()
 
                         val body1CollisionPointInBody0Coordinates =
                             Vector3d(pointPosInBody0Coordinates).fma(-.25, collisionNormalOutput)
                         val body0CollisionPointInBody0Coordinates = Vector3d(closestSurfacePointOutput)
 
-                        val normalInGlobalCoordinates = body0Transform.rotate(Vector3d(collisionNormalOutput)).mul(-1.0)
+                        val normalInGlobalCoordinates = body0Transform.rotate(Vector3d(collisionNormalOutput))
 
                         val body1CollisionPointInBody1Coordinates = body1Transform.invTransform(
                             body0Transform.transform(

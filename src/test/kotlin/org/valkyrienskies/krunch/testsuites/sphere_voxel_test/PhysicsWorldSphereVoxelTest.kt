@@ -9,6 +9,7 @@ import org.valkyrienskies.krunch.PhysicsWorld
 import org.valkyrienskies.krunch.Pose
 import org.valkyrienskies.krunch.collision.shapes.SphereShape
 import org.valkyrienskies.krunch.collision.shapes.TSDFVoxelShape
+import kotlin.math.abs
 
 class PhysicsWorldSphereVoxelTest : PhysicsWorld() {
 
@@ -23,35 +24,51 @@ class PhysicsWorldSphereVoxelTest : PhysicsWorld() {
             }
         }
 
-        for (x in -2..2) {
-            for (z in -2..2) {
-                groundBodyVoxels.add(Vector3i(x, 1, z))
+        for (x in -3..3) {
+            for (z in -3..3) {
+                if ((abs(x) == 3) or (abs(z) == 3))
+                    groundBodyVoxels.add(Vector3i(x, 1, z))
             }
         }
 
-        val singleVoxelShape = SphereShape(.5)
+        val bigCubeVoxels = ArrayList<Vector3ic>()
+        for (x in -1..1) {
+            for (y in -1..1) {
+                for (z in -1..1) {
+                    bigCubeVoxels.add(Vector3i(x, y, z))
+                }
+            }
+        }
+        val bigCubeVoxelShape = TSDFVoxelShape.createNewVoxelShape(bigCubeVoxels)
+
+        val sphereShape = SphereShape(.5)
 
         val firstBoxPose = Pose(Vector3d(0.0, 2.0, 0.0), Quaterniond())
         val firstBoxBody = Body(firstBoxPose)
         firstBoxBody.setBox(boxSize)
-        firstBoxBody.shape = singleVoxelShape
+        firstBoxBody.shape = sphereShape
 
         val secondBoxPose = Pose(Vector3d(0.0, 3.0, 0.0), Quaterniond())
         val secondBoxBody = Body(secondBoxPose)
         secondBoxBody.setBox(boxSize)
-        secondBoxBody.shape = singleVoxelShape
+        secondBoxBody.shape = sphereShape
 
         val thirdBoxPose = Pose(Vector3d(0.0, 4.0, 0.0), Quaterniond())
         val thirdBoxBody = Body(thirdBoxPose)
         thirdBoxBody.setBox(boxSize)
-        thirdBoxBody.shape = singleVoxelShape
+        thirdBoxBody.shape = sphereShape
 
-        val fourthBoxPose = Pose(Vector3d(0.0, 20.0, 0.0), Quaterniond())
+        val fourthBoxPose = Pose(Vector3d(0.1, 20.0, 0.0), Quaterniond())
         val fourthBoxBody = Body(fourthBoxPose)
         fourthBoxBody.setBox(boxSize)
-        fourthBoxBody.shape = singleVoxelShape
+        fourthBoxBody.shape = sphereShape
 
-        val groundPose = Pose(Vector3d(0.0, 0.0, 0.0), Quaterniond().rotateAxis(Math.toRadians(0.0), 0.0, 1.0, 1.0))
+        val fifthBodyPose = Pose(Vector3d(0.0, 30.0, 0.0), Quaterniond())
+        val fifthBody = Body(fifthBodyPose)
+        fifthBody.setBox(boxSize)
+        fifthBody.shape = bigCubeVoxelShape
+
+        val groundPose = Pose(Vector3d(0.0, 0.0, 0.0), Quaterniond().rotateAxis(Math.toRadians(20.0), 0.0, 1.0, 1.0))
         val groundBody = Body(groundPose)
         groundBody.setBox(boxSize)
         groundBody.shape = TSDFVoxelShape.createNewVoxelShape(groundBodyVoxels)
@@ -64,6 +81,7 @@ class PhysicsWorldSphereVoxelTest : PhysicsWorld() {
         bodies.add(secondBoxBody)
         bodies.add(thirdBoxBody)
         bodies.add(fourthBoxBody)
+        bodies.add(fifthBody)
     }
 
     override fun simulate(timeStep: Double) {

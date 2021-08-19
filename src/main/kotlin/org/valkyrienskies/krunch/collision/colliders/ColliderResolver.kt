@@ -21,6 +21,11 @@ object ColliderResolver : Collider<CollisionShape, CollisionShape> {
                     body0Shape as SphereShape, body0Transform, body1Shape as TSDFVoxelShape, body1Transform
                 )
             }
+            (body0Shape is SphereShape) and (body1Shape is SphereShape) -> {
+                SphereSphereCollider.computeCollisionBetweenShapes(
+                    body0Shape as SphereShape, body0Transform, body1Shape as SphereShape, body1Transform
+                )
+            }
             else -> {
                 null
             }

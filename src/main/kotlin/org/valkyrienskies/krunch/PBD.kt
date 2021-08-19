@@ -229,7 +229,7 @@ fun applyBodyPairCorrection(
     if (w == 0.0)
         return
 
-    val lambda = -C / (w + (compliance / dt / dt))
+    val lambda = -C / (w + (compliance / (dt * dt)))
     normal.mul(-lambda)
 
     if (body0 != null && !body0.isStatic) {
@@ -568,13 +568,14 @@ private fun resolveCollisions(collisions: List<CollisionData>, dt: Double, colli
                         return@collisionContact
                     }
 
-                    val corr = normal.mul(d, Vector3d())
+                    // This part doesn't make sense to me now, but it fixes a lot of problems to make [corr] negative
+                    val corr = normal.mul(-d, Vector3d())
 
                     // Compliance is set to [collisionCompliance] to dampen collision forces.
                     // Setting it to 0 makes it too strong, setting it too high makes collisions mushy.
                     // We use 1e-5 by default because its a good middle ground.
                     applyBodyPairCorrection(
-                        body1, body0, corr, collisionCompliance, dt,
+                        body0, body1, corr, collisionCompliance, dt,
                         body0PointPosInGlobal, body1PointPosInGlobal, false
                     )
                     used = true
