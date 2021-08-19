@@ -18,7 +18,7 @@ import java.nio.FloatBuffer
 /**
  * Creates a window that renders using OpenGL. Based off of https://github.com/LWJGL/lwjgl3-demos/blob/79e81f6f3794c3dfd32ba0a31aefa69e56ad603b/src/org/lwjgl/demo/opengl/transform/LwjglDemo.java.
  */
-class OpenGLWindow {
+class OpenGLWindow(private val physicsWorld: PhysicsWorld) {
     var errorCallback: GLFWErrorCallback? = null
     var keyCallback: GLFWKeyCallback? = null
     var fbCallback: GLFWFramebufferSizeCallback? = null
@@ -33,8 +33,6 @@ class OpenGLWindow {
 
     // FloatBuffer for transferring matrices to OpenGL
     private var floatBuffer: FloatBuffer = BufferUtils.createFloatBuffer(16)
-
-    private val physicsWorld: PhysicsWorld = PhysicsWorldTest()
 
     fun run() {
         try {
