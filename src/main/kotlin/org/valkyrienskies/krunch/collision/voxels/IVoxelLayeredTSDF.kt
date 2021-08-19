@@ -1,21 +1,25 @@
 package org.valkyrienskies.krunch.collision.voxels
 
 import org.joml.Vector3d
+import kotlin.math.roundToInt
 
 interface IVoxelLayeredTSDF {
 
     fun setVoxel(posX: Int, posY: Int, posZ: Int, set: Boolean)
 
-    fun getSignedDistanceAndNormal(
-        posX: Double, posY: Double, posZ: Double, collisionNormalOutput: Vector3d,
-        signedDistanceOutput: OutputParameterDouble, isQueryValid: OutputParameterBoolean
-    )
+    fun getVoxel(posX: Int, posY: Int, posZ: Int): Boolean
 
-    // fun getSignedDistance(
-    //     posX: Double, posY: Double, posZ: Double,
-    //     signedDistanceOutput: OutputParameterDouble, isQueryValid: OutputParameterBoolean
-    // )
+    fun getVoxel(posX: Double, posY: Double, posZ: Double): Boolean =
+        getVoxel(posX.roundToInt(), posY.roundToInt(), posZ.roundToInt())
 
-    data class OutputParameterDouble(var output: Double)
-    data class OutputParameterBoolean(var output: Boolean)
+    fun forEachVoxel(function: (posX: Int, posY: Int, posZ: Int) -> Unit)
+
+    /**
+     * Stores the closest surface point to ([posX], [posY], [posZ]) in [closestPointOutput].
+     *
+     * Returns true if the closest surface point was found, false if it wasn't.
+     *
+     * In other words, if the position is too far away from the surface, then we give up and return false.
+     */
+    fun getClosestPoint(posX: Double, posY: Double, posZ: Double, closestPointOutput: Vector3d): Boolean
 }

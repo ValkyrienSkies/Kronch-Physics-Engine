@@ -1,8 +1,6 @@
 package org.valkyrienskies.krunch.collision.voxels
 
 import org.joml.Vector3d
-import org.valkyrienskies.krunch.collision.voxels.IVoxelLayeredTSDF.OutputParameterBoolean
-import org.valkyrienskies.krunch.collision.voxels.IVoxelLayeredTSDF.OutputParameterDouble
 
 class GriddedTSDF : IVoxelLayeredTSDF {
     private val voxelWorld = LongDataWorld()
@@ -14,10 +12,15 @@ class GriddedTSDF : IVoxelLayeredTSDF {
         TODO("Not yet implemented")
     }
 
-    override fun getSignedDistanceAndNormal(
-        posX: Double, posY: Double, posZ: Double, collisionNormalOutput: Vector3d,
-        signedDistanceOutput: OutputParameterDouble, isQueryValid: OutputParameterBoolean
-    ) {
+    override fun getVoxel(posX: Int, posY: Int, posZ: Int): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun forEachVoxel(function: (posX: Int, posY: Int, posZ: Int) -> Unit) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getClosestPoint(posX: Double, posY: Double, posZ: Double, closestPointOutput: Vector3d): Boolean {
         TODO("Not yet implemented")
     }
 

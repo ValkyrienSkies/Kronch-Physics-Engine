@@ -189,7 +189,7 @@ class OpenGLWindow(private val physicsWorld: PhysicsWorld) {
                 )
                 val bodyShape = body.shape
                 if (bodyShape is NewVoxelShape) {
-                    bodyShape.forEachVoxel { posX, posY, posZ ->
+                    bodyShape.layeredTSDF.forEachVoxel { posX, posY, posZ ->
                         GL11.glPushMatrix()
                         GL11.glTranslatef(posX.toFloat(), posY.toFloat(), posZ.toFloat())
                         renderCube()

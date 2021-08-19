@@ -10,8 +10,6 @@ import org.valkyrienskies.krunch.collision.CollisionPairc
 import org.valkyrienskies.krunch.collision.CollisionResult
 import org.valkyrienskies.krunch.collision.CollisionResultc
 import org.valkyrienskies.krunch.collision.shapes.NewVoxelShape
-import org.valkyrienskies.krunch.collision.voxels.IVoxelLayeredTSDF.OutputParameterBoolean
-import org.valkyrienskies.krunch.collision.voxels.IVoxelLayeredTSDF.OutputParameterDouble
 
 object NewVoxelNewVoxelCollider : Collider<NewVoxelShape, NewVoxelShape> {
     override fun computeCollisionBetweenShapes(
@@ -37,7 +35,7 @@ object NewVoxelNewVoxelCollider : Collider<NewVoxelShape, NewVoxelShape> {
             body1Shape.shapeOffset.x, body1Shape.shapeOffset.y, body1Shape.shapeOffset.z
         )
 
-        body1Shape.forEachVoxel { posX, posY, posZ ->
+        body1Shape.layeredTSDF.forEachVoxel { posX, posY, posZ ->
             forEachCorner { xCorner: Int, yCorner: Int, zCorner: Int ->
                 val pointPosInBody1Coordinates: Vector3dc = Vector3d(
                     posX + xCorner * .25,
@@ -49,25 +47,30 @@ object NewVoxelNewVoxelCollider : Collider<NewVoxelShape, NewVoxelShape> {
 
                 val pointSphereRadius = .25
 
-                val collisionNormalOutput = Vector3d()
-                val signedDistanceOutput = OutputParameterDouble(0.0)
-                val isQueryValidOutput = OutputParameterBoolean(false)
+                val closestSurfacePointOutput = Vector3d()
 
-                body0Shape.getSignedDistanceAndNormal(
+                val wasClosestSurfacePointFound = body0Shape.layeredTSDF.getClosestPoint(
                     pointPosInBody0Coordinates.x(), pointPosInBody0Coordinates.y(), pointPosInBody0Coordinates.z(),
-                    collisionNormalOutput, signedDistanceOutput, isQueryValidOutput
+                    closestSurfacePointOutput
                 )
 
-                if (isQueryValidOutput.output) {
-                    if (signedDistanceOutput.output < pointSphereRadius) {
+                if (wasClosestSurfacePointFound) {
+                    val distanceToClosestSurfacePoint = pointPosInBody0Coordinates.distance(closestSurfacePointOutput)
+
+                    if (distanceToClosestSurfacePoint < pointSphereRadius) {
                         // Collision
                         // TODO: Figure out this part :|
-                        val collisionDepth = pointSphereRadius - signedDistanceOutput.output
+                        val collisionNormalOutput = Vector3d(pointPosInBody0Coordinates).sub(closestSurfacePointOutput)
+                        if (body0Shape.layeredTSDF.getVoxel(
+                                pointPosInBody0Coordinates.x(), pointPosInBody0Coordinates.y(),
+                                pointPosInBody0Coordinates.z()
+                            )
+                        ) collisionNormalOutput.mul(-1.0)
+                        collisionNormalOutput as Vector3dc
 
                         val body1CollisionPointInBody0Coordinates =
-                            Vector3d(pointPosInBody0Coordinates) // .fma(-.25, minNormal)
-                        val body0CollisionPointInBody0Coordinates =
-                            Vector3d(body1CollisionPointInBody0Coordinates).fma(-collisionDepth, collisionNormalOutput)
+                            Vector3d(pointPosInBody0Coordinates).fma(-.25, collisionNormalOutput)
+                        val body0CollisionPointInBody0Coordinates = Vector3d(closestSurfacePointOutput)
 
                         val normalInGlobalCoordinates = body0Transform.rotate(Vector3d(collisionNormalOutput)).mul(-1.0)
 
