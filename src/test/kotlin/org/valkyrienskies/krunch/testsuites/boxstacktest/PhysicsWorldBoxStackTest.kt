@@ -28,35 +28,27 @@ class PhysicsWorldBoxStackTest : PhysicsWorld() {
             }
         }
 
-        // groundBodyVoxels.add(Vector3i(0, 2, 0))
-
         val singleVoxelShape = NewVoxelShape.createNewVoxelShape(listOf(Vector3i()))
 
-        val biggerShapeVoxels = ArrayList<Vector3ic>()
-
-        for (x in -1..1) {
-            for (z in -1..1) {
-                biggerShapeVoxels.add(Vector3i(x, 0, z))
-            }
-        }
-        biggerShapeVoxels.add(Vector3i(0, -1, 0))
-
-        val biggerVoxelShape = NewVoxelShape.createNewVoxelShape(biggerShapeVoxels)
-
-        val firstBoxPose = Pose(Vector3d(0.0, 3.0, 0.0), Quaterniond())
+        val firstBoxPose = Pose(Vector3d(0.0, 2.0, 0.0), Quaterniond())
         val firstBoxBody = Body(firstBoxPose)
         firstBoxBody.setBox(boxSize)
         firstBoxBody.shape = singleVoxelShape
 
-        val secondBoxPose = Pose(Vector3d(0.0, 7.0, 0.0), Quaterniond())
+        val secondBoxPose = Pose(Vector3d(0.0, 3.0, 0.0), Quaterniond())
         val secondBoxBody = Body(secondBoxPose)
         secondBoxBody.setBox(boxSize)
         secondBoxBody.shape = singleVoxelShape
 
-        val thirdBoxPose = Pose(Vector3d(0.0, 5.0, 0.0), Quaterniond())
+        val thirdBoxPose = Pose(Vector3d(0.0, 4.0, 0.0), Quaterniond())
         val thirdBoxBody = Body(thirdBoxPose)
         thirdBoxBody.setBox(boxSize)
         thirdBoxBody.shape = singleVoxelShape
+
+        val fourthBoxPose = Pose(Vector3d(0.0, 20.0, 0.0), Quaterniond())
+        val fourthBoxBody = Body(fourthBoxPose)
+        fourthBoxBody.setBox(boxSize)
+        fourthBoxBody.shape = singleVoxelShape
 
         val groundPose = Pose(Vector3d(0.0, 0.0, 0.0), Quaterniond().rotateAxis(Math.toRadians(0.0), 0.0, 1.0, 1.0))
         val groundBody = Body(groundPose)
@@ -68,8 +60,9 @@ class PhysicsWorldBoxStackTest : PhysicsWorld() {
 
         bodies.add(groundBody)
         bodies.add(firstBoxBody)
-        // bodies.add(secondBoxBody)
-        // bodies.add(thirdBoxBody)
+        bodies.add(secondBoxBody)
+        bodies.add(thirdBoxBody)
+        bodies.add(fourthBoxBody)
     }
 
     override fun simulate(timeStep: Double) {

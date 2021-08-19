@@ -3,6 +3,8 @@ package org.valkyrienskies.krunch.testsuites
 import org.joml.AxisAngle4d
 import org.joml.Matrix4f
 import org.joml.Matrix4x3f
+import org.joml.Vector3f
+import org.joml.Vector3fc
 import org.lwjgl.BufferUtils
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
@@ -18,7 +20,11 @@ import java.nio.FloatBuffer
 /**
  * Creates a window that renders using OpenGL. Based off of https://github.com/LWJGL/lwjgl3-demos/blob/79e81f6f3794c3dfd32ba0a31aefa69e56ad603b/src/org/lwjgl/demo/opengl/transform/LwjglDemo.java.
  */
-class OpenGLWindow(private val physicsWorld: PhysicsWorld) {
+class OpenGLWindow(
+    private val physicsWorld: PhysicsWorld,
+    private val cameraEyePos: Vector3fc = Vector3f(0.0f, 4.0f, 10.0f),
+    private val cameraLookAtPos: Vector3fc = Vector3f(0.0f, 0.0f, 0.0f)
+) {
     var errorCallback: GLFWErrorCallback? = null
     var keyCallback: GLFWKeyCallback? = null
     var fbCallback: GLFWFramebufferSizeCallback? = null
@@ -171,7 +177,11 @@ class OpenGLWindow(private val physicsWorld: PhysicsWorld) {
             GL11.glLoadMatrixf(projMatrix[floatBuffer])
 
             // Set lookat view matrix
-            viewMatrix.setLookAt(0.0f, 4.0f, 10.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f)
+            viewMatrix.setLookAt(
+                cameraEyePos.x(), cameraEyePos.y(), cameraEyePos.z(),
+                cameraLookAtPos.x(), cameraLookAtPos.y(), cameraLookAtPos.z(),
+                0.0f, 1.0f, 0.0f
+            )
             GL11.glMatrixMode(GL11.GL_MODELVIEW)
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT or GL11.GL_DEPTH_BUFFER_BIT)
 
