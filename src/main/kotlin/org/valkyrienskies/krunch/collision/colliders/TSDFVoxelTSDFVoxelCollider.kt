@@ -9,11 +9,11 @@ import org.valkyrienskies.krunch.collision.CollisionPair
 import org.valkyrienskies.krunch.collision.CollisionPairc
 import org.valkyrienskies.krunch.collision.CollisionResult
 import org.valkyrienskies.krunch.collision.CollisionResultc
-import org.valkyrienskies.krunch.collision.shapes.NewVoxelShape
+import org.valkyrienskies.krunch.collision.shapes.TSDFVoxelShape
 
-object NewVoxelNewVoxelCollider : Collider<NewVoxelShape, NewVoxelShape> {
+object TSDFVoxelTSDFVoxelCollider : Collider<TSDFVoxelShape, TSDFVoxelShape> {
     override fun computeCollisionBetweenShapes(
-        body0Shape: NewVoxelShape, body0Transform: Pose, body1Shape: NewVoxelShape, body1Transform: Pose
+        body0Shape: TSDFVoxelShape, body0Transform: Pose, body1Shape: TSDFVoxelShape, body1Transform: Pose
     ): CollisionResultc {
         val collisionPairs = ArrayList<CollisionPairc>()
 
@@ -58,8 +58,6 @@ object NewVoxelNewVoxelCollider : Collider<NewVoxelShape, NewVoxelShape> {
                     val distanceToClosestSurfacePoint = pointPosInBody0Coordinates.distance(closestSurfacePointOutput)
 
                     if (distanceToClosestSurfacePoint < pointSphereRadius) {
-                        // Collision
-                        // TODO: Figure out this part :|
                         val collisionNormalOutput = Vector3d(pointPosInBody0Coordinates).sub(closestSurfacePointOutput)
                         if (body0Shape.layeredTSDF.getVoxel(
                                 pointPosInBody0Coordinates.x(), pointPosInBody0Coordinates.y(),

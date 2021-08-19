@@ -4,10 +4,10 @@ import org.joml.Quaterniond
 import org.joml.Vector3d
 import org.joml.Vector3dc
 import org.valkyrienskies.krunch.collision.CollisionResultc
-import org.valkyrienskies.krunch.collision.colliders.NewVoxelNewVoxelCollider
+import org.valkyrienskies.krunch.collision.colliders.TSDFVoxelTSDFVoxelCollider
 import org.valkyrienskies.krunch.collision.shapes.BoxShape
 import org.valkyrienskies.krunch.collision.shapes.CollisionShape
-import org.valkyrienskies.krunch.collision.shapes.NewVoxelShape
+import org.valkyrienskies.krunch.collision.shapes.TSDFVoxelShape
 import kotlin.math.abs
 import kotlin.math.asin
 import kotlin.math.max
@@ -599,8 +599,8 @@ private fun solveCollisions(bodies: List<Body>): List<CollisionData> {
             }
 
             // For now assume both shapes are new voxel shapes
-            val collisionResult = NewVoxelNewVoxelCollider.computeCollisionBetweenShapes(
-                body0.shape as NewVoxelShape, body0.pose, body1.shape as NewVoxelShape, body1.pose
+            val collisionResult = TSDFVoxelTSDFVoxelCollider.computeCollisionBetweenShapes(
+                body0.shape as TSDFVoxelShape, body0.pose, body1.shape as TSDFVoxelShape, body1.pose
             )
 
             if (collisionResult != null && collisionResult.colliding) {

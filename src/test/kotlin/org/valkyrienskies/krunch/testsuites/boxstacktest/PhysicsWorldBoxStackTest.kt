@@ -7,7 +7,7 @@ import org.joml.Vector3ic
 import org.valkyrienskies.krunch.Body
 import org.valkyrienskies.krunch.PhysicsWorld
 import org.valkyrienskies.krunch.Pose
-import org.valkyrienskies.krunch.collision.shapes.NewVoxelShape
+import org.valkyrienskies.krunch.collision.shapes.TSDFVoxelShape
 
 class PhysicsWorldBoxStackTest : PhysicsWorld() {
 
@@ -28,7 +28,7 @@ class PhysicsWorldBoxStackTest : PhysicsWorld() {
             }
         }
 
-        val singleVoxelShape = NewVoxelShape.createNewVoxelShape(listOf(Vector3i()))
+        val singleVoxelShape = TSDFVoxelShape.createNewVoxelShape(listOf(Vector3i()))
 
         val firstBoxPose = Pose(Vector3d(0.0, 2.0, 0.0), Quaterniond())
         val firstBoxBody = Body(firstBoxPose)
@@ -53,7 +53,7 @@ class PhysicsWorldBoxStackTest : PhysicsWorld() {
         val groundPose = Pose(Vector3d(0.0, 0.0, 0.0), Quaterniond().rotateAxis(Math.toRadians(0.0), 0.0, 1.0, 1.0))
         val groundBody = Body(groundPose)
         groundBody.setBox(boxSize)
-        groundBody.shape = NewVoxelShape.createNewVoxelShape(groundBodyVoxels)
+        groundBody.shape = TSDFVoxelShape.createNewVoxelShape(groundBodyVoxels)
         groundBody.isStatic = true
 
         // endregion

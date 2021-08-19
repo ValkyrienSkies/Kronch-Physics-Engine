@@ -14,7 +14,7 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
 import org.lwjgl.system.MemoryUtil
 import org.valkyrienskies.krunch.PhysicsWorld
-import org.valkyrienskies.krunch.collision.shapes.NewVoxelShape
+import org.valkyrienskies.krunch.collision.shapes.TSDFVoxelShape
 import java.nio.FloatBuffer
 
 /**
@@ -198,7 +198,7 @@ class OpenGLWindow(
                     axisAngle.z.toFloat()
                 )
                 val bodyShape = body.shape
-                if (bodyShape is NewVoxelShape) {
+                if (bodyShape is TSDFVoxelShape) {
                     bodyShape.layeredTSDF.forEachVoxel { posX, posY, posZ ->
                         GL11.glPushMatrix()
                         GL11.glTranslatef(posX.toFloat(), posY.toFloat(), posZ.toFloat())
