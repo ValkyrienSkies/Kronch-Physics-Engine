@@ -45,7 +45,7 @@ class PhysicsWorldBoxStackTest : PhysicsWorld() {
         thirdBoxBody.setBox(boxSize)
         thirdBoxBody.shape = singleVoxelShape
 
-        val fourthBoxPose = Pose(Vector3d(0.0, 20.0, 0.0), Quaterniond())
+        val fourthBoxPose = Pose(Vector3d(0.3, 20.0, 0.0), Quaterniond())
         val fourthBoxBody = Body(fourthBoxPose)
         fourthBoxBody.setBox(boxSize)
         fourthBoxBody.shape = singleVoxelShape

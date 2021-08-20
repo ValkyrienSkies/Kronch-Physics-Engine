@@ -61,7 +61,7 @@ class PhysicsWorldSphereVoxelTest : PhysicsWorld() {
         val fourthBoxPose = Pose(Vector3d(0.1, 20.0, 0.0), Quaterniond())
         val fourthBoxBody = Body(fourthBoxPose)
         fourthBoxBody.setBox(boxSize)
-        fourthBoxBody.shape = sphereShape
+        fourthBoxBody.shape = bigCubeVoxelShape
 
         val fifthBodyPose = Pose(Vector3d(0.0, 30.0, 0.0), Quaterniond())
         val fifthBody = Body(fifthBodyPose)

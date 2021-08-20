@@ -14,6 +14,7 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
 import org.lwjgl.system.MemoryUtil
 import org.valkyrienskies.krunch.PhysicsWorld
+import org.valkyrienskies.krunch.collision.shapes.BoxShape
 import org.valkyrienskies.krunch.collision.shapes.SphereShape
 import org.valkyrienskies.krunch.collision.shapes.TSDFVoxelShape
 import java.nio.FloatBuffer
@@ -198,18 +199,28 @@ class OpenGLWindow(
                     Math.toDegrees(axisAngle.angle).toFloat(), axisAngle.x.toFloat(), axisAngle.y.toFloat(),
                     axisAngle.z.toFloat()
                 )
-                val bodyShape = body.shape
-                if (bodyShape is TSDFVoxelShape) {
-                    bodyShape.layeredTSDF.forEachVoxel { posX, posY, posZ ->
+
+                // Render the shapes
+                when (val bodyShape = body.shape) {
+                    is TSDFVoxelShape -> {
+                        bodyShape.layeredTSDF.forEachVoxel { posX, posY, posZ ->
+                            GL11.glPushMatrix()
+                            GL11.glTranslatef(posX.toFloat(), posY.toFloat(), posZ.toFloat())
+                            renderCube()
+                            GL11.glPopMatrix()
+                        }
+                    }
+                    is SphereShape -> {
                         GL11.glPushMatrix()
-                        GL11.glTranslatef(posX.toFloat(), posY.toFloat(), posZ.toFloat())
                         renderCube()
                         GL11.glPopMatrix()
                     }
-                } else if (bodyShape is SphereShape) {
-                    GL11.glPushMatrix()
-                    renderCube()
-                    GL11.glPopMatrix()
+                    is BoxShape -> {
+                        GL11.glPushMatrix()
+                        GL11.glScaled(bodyShape.xRadius / .5, bodyShape.yRadius / .5, bodyShape.zRadius / .5)
+                        renderCube()
+                        GL11.glPopMatrix()
+                    }
                 }
                 GL11.glPopMatrix()
             }

@@ -166,6 +166,14 @@ class Body(_pose: Pose) {
         return vel
     }
 
+    fun getPrevVelocityAt(pos: Vector3d): Vector3d {
+        val vel = Vector3d(0.0, 0.0, 0.0)
+        pos.sub(this.pose.p, vel)
+        vel.cross(this.prevOmega)
+        this.prevVel.sub(vel, vel)
+        return vel
+    }
+
     fun getInverseMass(normal: Vector3dc, pos: Vector3dc? = null): Double {
         if (isStatic) throw IllegalStateException("Cannot get inverse mass of a static body")
         val n = Vector3d()
@@ -206,6 +214,15 @@ class Body(_pose: Pose) {
             this.omega.add(dq)
         else
             this.applyRotation(dq)
+    }
+
+    companion object {
+        fun createStaticBody(pose: Pose, shape: CollisionShape): Body {
+            val body = Body(pose)
+            body.shape = shape
+            body.isStatic = true
+            return body
+        }
     }
 }
 
@@ -474,6 +491,7 @@ fun simulate(bodies: List<Body>, joints: List<Joint>, timeStep: Double, numSubst
 
         // Step 3.5, update velocities to apply friction and collision restitution
         correctRestitution(collisions, dt)
+        // friction(collisions, dt)
 
         // Step 4, solve velocity constraints
         for (joint in joints)
@@ -481,7 +499,7 @@ fun simulate(bodies: List<Body>, joints: List<Joint>, timeStep: Double, numSubst
     }
 }
 
-private fun correctRestitution(collisions: List<CollisionData>, dt: Double) {
+private fun correctRestitution(collisions: List<CollisionData>, dt: Double, restitutionCompliance: Double = 1e-6) {
     collisions.forEach { collision ->
         with(collision) {
             collisionResult.collisionPoints.forEach { collisionContact ->
@@ -502,8 +520,8 @@ private fun correctRestitution(collisions: List<CollisionData>, dt: Double) {
 
                     // Compute the previous velocity along normal
                     val relativeVelocityAlongNormalPrev = if (abs(relativeVelocityAlongNormal) > 2 * 10.0 * dt) {
-                        val body0VelocityAtPointPrev = body0.getVelocityAt(body0CollisionPosInGlobal)
-                        val body1VelocityAtPointPrev = body1.getVelocityAt(body1CollisionPosInGlobal)
+                        val body0VelocityAtPointPrev = body0.getPrevVelocityAt(body0CollisionPosInGlobal)
+                        val body1VelocityAtPointPrev = body1.getPrevVelocityAt(body1CollisionPosInGlobal)
                         val relativeVelocityPrev = body0VelocityAtPointPrev.sub(body1VelocityAtPointPrev, Vector3d())
                         normal.dot(relativeVelocityPrev)
                     } else {
@@ -511,7 +529,7 @@ private fun correctRestitution(collisions: List<CollisionData>, dt: Double) {
                     }
 
                     // For now, just make collisions perfectly elastic
-                    val coefficientOfRestitution = 1.0
+                    val coefficientOfRestitution = .5
 
                     // [deltaVelocity] serves 2 purposes:
                     // The first is to remove velocity added by [collision]
@@ -522,29 +540,62 @@ private fun correctRestitution(collisions: List<CollisionData>, dt: Double) {
                         Vector3d()
                     )
 
-                    if (deltaVelocity.length() < PAIR_CORRECTION_MIN_LENGTH) {
-                        // Small change, skip to avoid floating point error
-                        return@collisionContact
-                    }
-
-                    applyBodyPairCorrection(
-                        body0, body1, deltaVelocity, 1e-6, dt, body0CollisionPosInGlobal, body1CollisionPosInGlobal,
-                        true
+                    val deltaVelocityNoElastic = normal.mul(
+                        -relativeVelocityAlongNormal,
+                        Vector3d()
                     )
 
-                    // Test code to measure relative velocity after the correction
-                    /*
-                    val body0VelocityAtPointFinal = body0.getVelocityAt(body0CollisionPosInGlobal)
-                    val body1VelocityAtPointFinal = body1.getVelocityAt(body1CollisionPosInGlobal)
-
-                    val relativeVelocityFinal = body0VelocityAtPointFinal.sub(body1VelocityAtPointFinal, Vector3d())
-
-                    val relativeVelocityAlongNormalFinal = normal.dot(relativeVelocityFinal)
-
-                    if (abs(relativeVelocityAlongNormalFinal) > 1e-10) {
-                        println("error")
+                    if (deltaVelocityNoElastic.length() < PAIR_CORRECTION_MIN_LENGTH) {
+                        applyBodyPairCorrection(
+                            body0, body1, deltaVelocityNoElastic, restitutionCompliance, dt, body0CollisionPosInGlobal,
+                            body1CollisionPosInGlobal,
+                            true
+                        )
+                    } else {
+                        applyBodyPairCorrection(
+                            body0, body1, deltaVelocity, restitutionCompliance, dt, body0CollisionPosInGlobal,
+                            body1CollisionPosInGlobal,
+                            true
+                        )
                     }
-                     */
+                }
+            }
+        }
+    }
+}
+
+private fun friction(collisions: List<CollisionData>, dt: Double, restitutionCompliance: Double = 1e-6) {
+    collisions.forEach { collision ->
+        with(collision) {
+            collisionResult.collisionPoints.forEach { collisionContact ->
+                with(collisionContact) collisionContact@{
+                    if (!used) {
+                        // If this contact wasn't used, then it didn't effect velocity so we don't need to correct anything
+                        return@collisionContact
+                    }
+                    // For each collision contact, set the relative velocity of the collision points on both bodies to 0
+                    val body0CollisionPosInGlobal = body0.pose.transform(Vector3d(positionInFirstBody))
+                    val body1CollisionPosInGlobal = body1.pose.transform(Vector3d(positionInSecondBody))
+
+                    // Compute the current velocity along normal
+                    val body0VelocityAtPoint = body0.getVelocityAt(body0CollisionPosInGlobal)
+                    val body1VelocityAtPoint = body1.getVelocityAt(body1CollisionPosInGlobal)
+                    val relativeVelocity = body0VelocityAtPoint.sub(body1VelocityAtPoint, Vector3d())
+                    val relativeVelocityAlongNormal = normal.dot(relativeVelocity)
+
+                    run applyDynamicFriction@{
+                        val tangentialVelocity = Vector3d(relativeVelocity).fma(-relativeVelocityAlongNormal, normal)
+
+                        val corr = Vector3d(tangentialVelocity).mul(-1.0)
+
+                        corr.mul(.1)
+
+                        applyBodyPairCorrection(
+                            body0, body1, corr, restitutionCompliance, dt, body0CollisionPosInGlobal,
+                            body1CollisionPosInGlobal,
+                            true
+                        )
+                    }
                 }
             }
         }
