@@ -9,7 +9,7 @@ import org.valkyrienskies.krunch.collision.shapes.CollisionShape
 import org.valkyrienskies.krunch.collision.shapes.SphereShape
 import kotlin.math.abs
 import kotlin.math.asin
-import kotlin.math.max
+import kotlin.math.min
 
 // pretty much one-for-one port of https://github.com/matthias-research/pages/blob/master/challenges/PBD.js
 
@@ -83,8 +83,8 @@ class Body(_pose: Pose) {
     val omega = Vector3d()
 
     // [prevVel] and [prevOmega] are used to compute friction
-    val prevVel = Vector3d()
-    val prevOmega = Vector3d()
+    private val prevVel = Vector3d()
+    private val prevOmega = Vector3d()
 
     var invMass = 1.0
     val invInertia = Vector3d(1.0, 1.0, 1.0)
@@ -151,8 +151,8 @@ class Body(_pose: Pose) {
         if (dq.w < 0.0)
             this.omega.set(-this.omega.x, -this.omega.y, -this.omega.z)
 
-        this.omega.mul(1.0 - 1.0 * dt)
-        this.vel.mul(1.0 - 1.0 * dt)
+        // this.omega.mul(1.0 - 1.0 * dt)
+        // this.vel.mul(1.0 - 1.0 * dt)
 
         this.position.set(this.pose.p)
         this.quaternion.set(this.pose.q)
@@ -515,8 +515,9 @@ private fun correctRestitution(collisions: List<CollisionData>, dt: Double, rest
                     // Compute the current velocity along normal
                     val body0VelocityAtPoint = body0.getVelocityAt(body0CollisionPosInGlobal)
                     val body1VelocityAtPoint = body1.getVelocityAt(body1CollisionPosInGlobal)
+
                     val relativeVelocity = body0VelocityAtPoint.sub(body1VelocityAtPoint, Vector3d())
-                    val relativeVelocityAlongNormal = normal.dot(relativeVelocity)
+                    val relativeVelocityAlongNormal = normal.dot(relativeVelocity) // v_n
 
                     // Compute the previous velocity along normal
                     val relativeVelocityAlongNormalPrev = if (abs(relativeVelocityAlongNormal) > 2 * 10.0 * dt) {
@@ -529,35 +530,22 @@ private fun correctRestitution(collisions: List<CollisionData>, dt: Double, rest
                     }
 
                     // For now, just make collisions perfectly elastic
-                    val coefficientOfRestitution = .5
+                    val coefficientOfRestitution = 1.0
 
                     // [deltaVelocity] serves 2 purposes:
                     // The first is to remove velocity added by [collision]
                     // The second is to apply the coefficient of restitution to [collision]
                     val deltaVelocity = normal.mul(
                         -relativeVelocityAlongNormal +
-                            max(-coefficientOfRestitution * relativeVelocityAlongNormalPrev, 0.0),
+                            min(-coefficientOfRestitution * relativeVelocityAlongNormalPrev, 0.0),
                         Vector3d()
                     )
 
-                    val deltaVelocityNoElastic = normal.mul(
-                        -relativeVelocityAlongNormal,
-                        Vector3d()
+                    applyBodyPairCorrection(
+                        body0, body1, deltaVelocity, restitutionCompliance, dt, body0CollisionPosInGlobal,
+                        body1CollisionPosInGlobal,
+                        true
                     )
-
-                    if (deltaVelocityNoElastic.length() < PAIR_CORRECTION_MIN_LENGTH) {
-                        applyBodyPairCorrection(
-                            body0, body1, deltaVelocityNoElastic, restitutionCompliance, dt, body0CollisionPosInGlobal,
-                            body1CollisionPosInGlobal,
-                            true
-                        )
-                    } else {
-                        applyBodyPairCorrection(
-                            body0, body1, deltaVelocity, restitutionCompliance, dt, body0CollisionPosInGlobal,
-                            body1CollisionPosInGlobal,
-                            true
-                        )
-                    }
                 }
             }
         }

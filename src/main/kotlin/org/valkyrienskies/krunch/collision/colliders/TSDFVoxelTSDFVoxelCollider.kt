@@ -59,6 +59,12 @@ object TSDFVoxelTSDFVoxelCollider : Collider<TSDFVoxelShape, TSDFVoxelShape> {
 
                     if (distanceToClosestSurfacePoint < pointSphereRadius) {
                         val collisionNormalOutput = Vector3d(pointPosInBody0Coordinates).sub(closestSurfacePointOutput)
+
+                        if (collisionNormalOutput.lengthSquared() < 1e-12) {
+                            // Avoid numerical instability
+                            return@forEachCorner
+                        }
+
                         if (body0Shape.layeredTSDF.getVoxel(
                                 pointPosInBody0Coordinates.x(), pointPosInBody0Coordinates.y(),
                                 pointPosInBody0Coordinates.z()
