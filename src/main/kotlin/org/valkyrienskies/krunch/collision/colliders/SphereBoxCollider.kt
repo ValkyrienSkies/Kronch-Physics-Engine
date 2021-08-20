@@ -29,27 +29,25 @@ object SphereBoxCollider : Collider<SphereShape, BoxShape> {
                 && (abs(spherePosRelativeToBox.y()) < body1Shape.yRadius)
                 && (abs(spherePosRelativeToBox.z()) < body1Shape.zRadius)
 
-        if ((closestPointRelativeToBoxInBody1Coordinates.lengthSquared() < body0Shape.radius * body0Shape.radius)) {
-            val difference =
-                body1Transform.transform(Vector3d(closestPointRelativeToBoxInBody1Coordinates)).sub(body0Transform.p)
-            if (difference.lengthSquared() > 1e-12) {
-                val normal = Vector3d(difference).normalize()
-                val deepestSpherePoint = Vector3d(body0Transform.p)
-                if (!isSphereCenterWithinBox) {
-                    deepestSpherePoint.fma(body0Shape.radius, normal)
-                } else {
-                    deepestSpherePoint.fma(-body0Shape.radius, normal)
-                }
-                return CollisionResult(
-                    listOf(
-                        CollisionPair(
-                            body0Transform.invTransform(Vector3d(deepestSpherePoint)),
-                            closestPointRelativeToBoxInBody1Coordinates,
-                            normal
-                        )
+        val difference =
+            body1Transform.transform(Vector3d(closestPointRelativeToBoxInBody1Coordinates)).sub(body0Transform.p)
+        if ((difference.lengthSquared() < body0Shape.radius * body0Shape.radius) && difference.lengthSquared() > 1e-12) {
+            val normal = Vector3d(difference).normalize()
+            val deepestSpherePoint = Vector3d(body0Transform.p)
+            if (!isSphereCenterWithinBox) {
+                deepestSpherePoint.fma(body0Shape.radius, normal)
+            } else {
+                deepestSpherePoint.fma(-body0Shape.radius, normal)
+            }
+            return CollisionResult(
+                listOf(
+                    CollisionPair(
+                        body0Transform.invTransform(Vector3d(deepestSpherePoint)),
+                        closestPointRelativeToBoxInBody1Coordinates,
+                        normal
                     )
                 )
-            }
+            )
         }
 
         return null
