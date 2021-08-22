@@ -226,13 +226,17 @@ class Body(_pose: Pose) {
 
 private const val PAIR_CORRECTION_MIN_LENGTH = 1e-10
 
+/**
+ * Returns the lambda used in this correction computation
+ */
 fun applyBodyPairCorrection(
     body0: Body?, body1: Body?, corr: Vector3dc, compliance: Double,
-    dt: Double, pos0: Vector3dc? = null, pos1: Vector3dc? = null, velocityLevel: Boolean = false
-) {
+    dt: Double, pos0: Vector3dc? = null, pos1: Vector3dc? = null, velocityLevel: Boolean = false,
+    prevLambda: Double = 0.0
+): Double {
     val C = corr.length()
     if (C == 0.0)
-        return
+        return 0.0
 
     val normal = Vector3d(corr)
     normal.normalize()
@@ -242,10 +246,11 @@ fun applyBodyPairCorrection(
 
     val w = w0 + w1
     if (w == 0.0)
-        return
+        return 0.0
 
-    val lambda = -C / (w + (compliance / (dt * dt)))
-    normal.mul(-lambda)
+    val deltaLambda = (-C - prevLambda * compliance) / (w + (compliance / (dt * dt)))
+    val newLambda = prevLambda + deltaLambda
+    normal.mul(-newLambda)
 
     if (body0 != null && !body0.isStatic) {
         body0.applyCorrection(normal, pos0, velocityLevel)
@@ -255,6 +260,8 @@ fun applyBodyPairCorrection(
         normal.mul(-1.0)
         body1.applyCorrection(normal, pos1, velocityLevel)
     }
+
+    return newLambda
 }
 
 fun limitAngle(
@@ -482,6 +489,7 @@ fun simulate(bodies: List<Body>, joints: List<Joint>, timeStep: Double, numSubst
         // Collide shapes with each other
         val collisions = solveCollisions(bodies)
         resolveCollisions(collisions, dt)
+        // resolveCollisions(collisions, dt)
 
         // Step 3, compute new velocities given the positional updates
         for (body in bodies)
@@ -501,7 +509,8 @@ fun simulate(bodies: List<Body>, joints: List<Joint>, timeStep: Double, numSubst
          */
         for (i in 1..3) correctRestitution(collisions, dt)
 
-        // friction(collisions, dt)
+        // Only run this once
+        applyDynamicFriction(collisions, dt)
 
         // Step 4, solve velocity constraints
         for (joint in joints)
@@ -569,7 +578,7 @@ private fun correctRestitution(collisions: List<CollisionData>, dt: Double, rest
     }
 }
 
-private fun friction(collisions: List<CollisionData>, dt: Double, restitutionCompliance: Double = 0.0) {
+private fun applyDynamicFriction(collisions: List<CollisionData>, dt: Double, restitutionCompliance: Double = 0.0) {
     collisions.forEach { collision ->
         with(collision) {
             collisionResult.collisionPoints.forEach { collisionContact ->
@@ -591,12 +600,27 @@ private fun friction(collisions: List<CollisionData>, dt: Double, restitutionCom
                     run applyDynamicFriction@{
                         val tangentialVelocity = Vector3d(relativeVelocity).fma(-relativeVelocityAlongNormal, normal)
 
-                        val corr = Vector3d(tangentialVelocity).mul(-1.0)
+                        // v_t
+                        val tangentialVelocityLength = tangentialVelocity.length()
 
-                        corr.mul(.1)
+                        // Avoid dividing by 0
+                        if (tangentialVelocityLength < 1e-12) return@applyDynamicFriction
+
+                        // u_d
+                        val dynamicFrictionCoefficient = 1.0
+
+                        // f_d
+                        val normalForce = abs(collisionContact.collisionLambda) / (dt * dt)
+
+                        val friction =
+                            tangentialVelocity.mul(
+                                -min(
+                                    dt * dynamicFrictionCoefficient * normalForce, tangentialVelocityLength
+                                ) / tangentialVelocityLength
+                            )
 
                         applyBodyPairCorrection(
-                            body0, body1, corr, restitutionCompliance, dt, body0CollisionPosInGlobal,
+                            body0, body1, friction, restitutionCompliance, dt, body0CollisionPosInGlobal,
                             body1CollisionPosInGlobal,
                             true
                         )
@@ -628,12 +652,11 @@ private fun resolveCollisions(collisions: List<CollisionData>, dt: Double, colli
                     val corr = normal.mul(-d, Vector3d())
 
                     // Compliance is set to [collisionCompliance] to dampen collision forces.
-                    // Setting it to 0 makes it too strong, setting it too high makes collisions mushy.
-                    // We use 1e-5 by default because its a good middle ground.
-                    applyBodyPairCorrection(
+                    collisionLambda = applyBodyPairCorrection(
                         body0, body1, corr, collisionCompliance, dt,
-                        body0PointPosInGlobal, body1PointPosInGlobal, false
+                        body0PointPosInGlobal, body1PointPosInGlobal, false, collisionLambda
                     )
+
                     used = true
                 }
             }
