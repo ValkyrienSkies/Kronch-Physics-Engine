@@ -10,5 +10,6 @@ interface CollisionPairc {
     val positionInSecondBody: Vector3dc
     val normal: Vector3dc
     var used: Boolean
-    var collisionLambda: Double
+    var normalLambda: Double
+    var tangentialLambda: Double
 }
