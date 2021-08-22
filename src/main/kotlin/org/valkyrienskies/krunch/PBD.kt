@@ -577,7 +577,7 @@ private fun correctRestitution(collisions: List<CollisionData>, dt: Double, rest
     }
 }
 
-private fun applyStaticFriction(collisions: List<CollisionData>, dt: Double, restitutionCompliance: Double = 0.0) {
+private fun applyDynamicFriction(collisions: List<CollisionData>, dt: Double, restitutionCompliance: Double = 0.0) {
     collisions.forEach { collision ->
         with(collision) {
             collisionResult.collisionPoints.forEach { collisionContact ->
@@ -608,59 +608,6 @@ private fun applyStaticFriction(collisions: List<CollisionData>, dt: Double, res
                         // u_d
                         val dynamicFrictionCoefficient =
                             (body0.dynamicFrictionCoefficient + body1.dynamicFrictionCoefficient) / 2.0
-
-                        // f_d
-                        val normalForce = abs(collisionContact.normalLambda) / (dt * dt)
-
-                        val friction =
-                            tangentialVelocity.mul(
-                                -min(
-                                    dt * dynamicFrictionCoefficient * normalForce, tangentialVelocityLength
-                                ) / tangentialVelocityLength
-                            )
-
-                        applyBodyPairCorrection(
-                            body0, body1, friction, restitutionCompliance, dt, body0CollisionPosInGlobal,
-                            body1CollisionPosInGlobal,
-                            true
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-private fun applyDynamicFriction(collisions: List<CollisionData>, dt: Double, restitutionCompliance: Double = 0.0) {
-    collisions.forEach { collision ->
-        with(collision) {
-            collisionResult.collisionPoints.forEach { collisionContact ->
-                with(collisionContact) collisionContact@{
-                    if (!used) {
-                        // If this contact wasn't used, then it didn't effect velocity so we don't need to correct anything
-                        return@collisionContact
-                    }
-                    // For each collision contact, set the relative velocity of the collision points on both bodies to 0
-                    val body0CollisionPosInGlobal = body0.pose.transform(Vector3d(positionInFirstBody))
-                    val body1CollisionPosInGlobal = body1.pose.transform(Vector3d(positionInSecondBody))
-
-                    // Compute the current velocity along normal
-                    val body0VelocityAtPoint = body0.getVelocityAt(body0CollisionPosInGlobal)
-                    val body1VelocityAtPoint = body1.getVelocityAt(body1CollisionPosInGlobal)
-                    val relativeVelocity = body0VelocityAtPoint.sub(body1VelocityAtPoint, Vector3d())
-                    val relativeVelocityAlongNormal = normal.dot(relativeVelocity)
-
-                    run applyDynamicFriction2@{
-                        val tangentialVelocity = Vector3d(relativeVelocity).fma(-relativeVelocityAlongNormal, normal)
-
-                        // v_t
-                        val tangentialVelocityLength = tangentialVelocity.length()
-
-                        // Avoid dividing by 0
-                        if (tangentialVelocityLength < 1e-12) return@applyDynamicFriction2
-
-                        // u_d
-                        val dynamicFrictionCoefficient = 1.0
 
                         // f_d
                         val normalForce = abs(collisionContact.normalLambda) / (dt * dt)

@@ -153,6 +153,11 @@ class PhysicsWorldNewtonBallsTest : PhysicsWorld() {
         bodies.add(secondBallBody)
         bodies.add(thirdBallBody)
         bodies.add(fourthBallBody)
+
+        for (body in bodies) {
+            body.staticFrictionCoefficient = 0.0
+            body.dynamicFrictionCoefficient = 0.0
+        }
     }
 
     override fun simulate(timeStep: Double) {
