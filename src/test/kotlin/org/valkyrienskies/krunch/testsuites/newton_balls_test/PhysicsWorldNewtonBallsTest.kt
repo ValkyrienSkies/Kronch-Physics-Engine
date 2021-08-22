@@ -29,18 +29,22 @@ class PhysicsWorldNewtonBallsTest : PhysicsWorld() {
         val firstBallBody = Body(Pose(Vector3d(0.0, 2.5, 0.0), Quaterniond()))
         firstBallBody.setBox(boxSize)
         firstBallBody.shape = sphereShape
+        firstBallBody.coefficientOfRestitution = 1.0
 
         val secondBallBody = Body(Pose(Vector3d(1.0, 2.5, 0.0), Quaterniond()))
         secondBallBody.setBox(boxSize)
         secondBallBody.shape = sphereShape
+        secondBallBody.coefficientOfRestitution = 1.0
 
         val thirdBallBody = Body(Pose(Vector3d(-1.0, 2.5, 0.0), Quaterniond()))
         thirdBallBody.setBox(boxSize)
         thirdBallBody.shape = sphereShape
+        thirdBallBody.coefficientOfRestitution = 1.0
 
         val fourthBallBody = Body(Pose(Vector3d(6.0, 5.0, 0.0), Quaterniond()))
         fourthBallBody.setBox(boxSize)
         fourthBallBody.shape = sphereShape
+        fourthBallBody.coefficientOfRestitution = 1.0
 
         val groundPose = Pose(Vector3d(0.0, 0.0, 0.0), Quaterniond().rotateAxis(Math.toRadians(0.0), 0.0, 1.0, 1.0))
         val groundBody = Body(groundPose)
@@ -51,13 +55,17 @@ class PhysicsWorldNewtonBallsTest : PhysicsWorld() {
         val railDistanceFromOrigin = .45
 
         val firstRailSegmentBody = Body.createStaticBody(
-            Pose(Vector3d(0.0, 2.0, railDistanceFromOrigin)),
+            Pose(
+                Vector3d(0.0, 2.0, railDistanceFromOrigin),
+                Quaterniond().rotateAxis(Math.toRadians(45.0), 1.0, 0.0, 0.0)
+            ),
             BoxShape(3.0, .1, .1)
         )
         val secondRailSegmentBody = Body.createStaticBody(
             Pose(
                 Vector3d(3.75, 2.5, railDistanceFromOrigin),
                 Quaterniond().rotateAxis(Math.toRadians(15.0), 0.0, 0.0, 1.0)
+                    .rotateAxis(Math.toRadians(45.0), 1.0, 0.0, 0.0)
             ),
             BoxShape(2.5, .1, .1)
         )
@@ -65,6 +73,7 @@ class PhysicsWorldNewtonBallsTest : PhysicsWorld() {
             Pose(
                 Vector3d(-3.75, 2.5, railDistanceFromOrigin),
                 Quaterniond().rotateAxis(Math.toRadians(-15.0), 0.0, 0.0, 1.0)
+                    .rotateAxis(Math.toRadians(45.0), 1.0, 0.0, 0.0)
             ),
             BoxShape(2.5, .1, .1)
         )
@@ -72,6 +81,7 @@ class PhysicsWorldNewtonBallsTest : PhysicsWorld() {
             Pose(
                 Vector3d(-5.0, 3.25, railDistanceFromOrigin),
                 Quaterniond().rotateAxis(Math.toRadians(-30.0), 0.0, 0.0, 1.0)
+                    .rotateAxis(Math.toRadians(45.0), 1.0, 0.0, 0.0)
             ),
             BoxShape(2.0, .1, .1)
         )
@@ -79,18 +89,23 @@ class PhysicsWorldNewtonBallsTest : PhysicsWorld() {
             Pose(
                 Vector3d(5.0, 3.25, railDistanceFromOrigin),
                 Quaterniond().rotateAxis(Math.toRadians(30.0), 0.0, 0.0, 1.0)
+                    .rotateAxis(Math.toRadians(45.0), 1.0, 0.0, 0.0)
             ),
             BoxShape(2.0, .1, .1)
         )
 
         val firstRailSegmentBodyOpposite = Body.createStaticBody(
-            Pose(Vector3d(0.0, 2.0, -railDistanceFromOrigin)),
+            Pose(
+                Vector3d(0.0, 2.0, -railDistanceFromOrigin),
+                Quaterniond().rotateAxis(Math.toRadians(45.0), 1.0, 0.0, 0.0)
+            ),
             BoxShape(3.0, .1, .1)
         )
         val secondRailSegmentBodyOpposite = Body.createStaticBody(
             Pose(
                 Vector3d(3.75, 2.5, -railDistanceFromOrigin),
                 Quaterniond().rotateAxis(Math.toRadians(15.0), 0.0, 0.0, 1.0)
+                    .rotateAxis(Math.toRadians(45.0), 1.0, 0.0, 0.0)
             ),
             BoxShape(2.5, .1, .1)
         )
@@ -98,6 +113,7 @@ class PhysicsWorldNewtonBallsTest : PhysicsWorld() {
             Pose(
                 Vector3d(-3.75, 2.5, -railDistanceFromOrigin),
                 Quaterniond().rotateAxis(Math.toRadians(-15.0), 0.0, 0.0, 1.0)
+                    .rotateAxis(Math.toRadians(45.0), 1.0, 0.0, 0.0)
             ),
             BoxShape(2.5, .1, .1)
         )
@@ -105,6 +121,7 @@ class PhysicsWorldNewtonBallsTest : PhysicsWorld() {
             Pose(
                 Vector3d(-5.0, 3.25, -railDistanceFromOrigin),
                 Quaterniond().rotateAxis(Math.toRadians(-30.0), 0.0, 0.0, 1.0)
+                    .rotateAxis(Math.toRadians(45.0), 1.0, 0.0, 0.0)
             ),
             BoxShape(2.0, .1, .1)
         )
@@ -112,12 +129,13 @@ class PhysicsWorldNewtonBallsTest : PhysicsWorld() {
             Pose(
                 Vector3d(5.0, 3.25, -railDistanceFromOrigin),
                 Quaterniond().rotateAxis(Math.toRadians(30.0), 0.0, 0.0, 1.0)
+                    .rotateAxis(Math.toRadians(45.0), 1.0, 0.0, 0.0)
             ),
             BoxShape(2.0, .1, .1)
         )
         // endregion
 
-        bodies.add(groundBody)
+        // bodies.add(groundBody)
 
         bodies.add(firstRailSegmentBody)
         bodies.add(secondRailSegmentBody)

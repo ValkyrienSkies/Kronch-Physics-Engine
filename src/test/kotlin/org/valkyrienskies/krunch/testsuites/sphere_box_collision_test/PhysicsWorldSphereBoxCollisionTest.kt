@@ -20,27 +20,34 @@ class PhysicsWorldSphereBoxCollisionTest : PhysicsWorld() {
         val firstBallBody = Body(firstBallPose)
         firstBallBody.setBox(boxSize)
         firstBallBody.shape = sphereShape
+        firstBallBody.coefficientOfRestitution = 1.0
 
         val secondBallBody = Body(Pose(Vector3d(0.0, 8.0, 0.0), Quaterniond()))
         secondBallBody.setBox(boxSize)
         secondBallBody.shape = sphereShape
+        secondBallBody.coefficientOfRestitution = 1.0
 
         val thirdBallBody = Body(Pose(Vector3d(0.0, 2.0, 0.0), Quaterniond()))
         thirdBallBody.setBox(boxSize)
         thirdBallBody.shape = sphereShape
+        thirdBallBody.coefficientOfRestitution = 1.0
 
         val fourthBallBody = Body(Pose(Vector3d(0.0, 12.0, 0.0), Quaterniond()))
         fourthBallBody.setBox(boxSize)
         fourthBallBody.shape = sphereShape
+        fourthBallBody.coefficientOfRestitution = 1.0
 
         val fifthBallBody = Body(Pose(Vector3d(0.0, 15.0, 0.0), Quaterniond()))
         fifthBallBody.setBox(boxSize)
         fifthBallBody.shape = sphereShape
+        fifthBallBody.coefficientOfRestitution = 1.0
 
         val firstBoxBody = Body.createStaticBody(
             Pose(Vector3d(0.0, 0.0, 0.3), Quaterniond().rotateAxis(Math.toRadians(0.0), 0.0, 0.0, 1.0)),
             BoxShape(10.0, .5, 10.0)
         )
+        firstBoxBody.coefficientOfRestitution = 1.0
+
         val secondBoxBody = Body.createStaticBody(
             Pose(Vector3d(5.0, 1.0, 0.0), Quaterniond().rotateAxis(Math.toRadians(45.0), 0.0, 1.0, 0.0)),
             BoxShape(10.0, .5, .5)

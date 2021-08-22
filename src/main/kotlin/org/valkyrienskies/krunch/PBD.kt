@@ -93,6 +93,7 @@ class Body(_pose: Pose) {
 
     // Use a sphere shape by default
     var shape: CollisionShape = SphereShape(.5)
+    var coefficientOfRestitution = .5
 
     fun setBox(size: Vector3d, density: Double = 1.0) {
         var mass = size.x * size.y * size.z * density
@@ -213,10 +214,11 @@ class Body(_pose: Pose) {
     }
 
     companion object {
-        fun createStaticBody(pose: Pose, shape: CollisionShape): Body {
+        fun createStaticBody(pose: Pose, shape: CollisionShape, coefficientOfRestitution: Double = .8): Body {
             val body = Body(pose)
             body.shape = shape
             body.isStatic = true
+            body.coefficientOfRestitution = coefficientOfRestitution
             return body
         }
     }
@@ -494,6 +496,8 @@ fun simulate(bodies: List<Body>, joints: List<Joint>, timeStep: Double, numSubst
          * times to handle multiple bodies.
          *
          * It seems like 3 is about right, too many steps seems to take away too much momentum.
+         *
+         * Maybe I should use the Jacobian solver to solve these equations?
          */
         for (i in 1..3) correctRestitution(collisions, dt)
 
@@ -534,10 +538,9 @@ private fun correctRestitution(collisions: List<CollisionData>, dt: Double, rest
                                 0.0
                             }
 
-                        // For now, just make collisions perfectly elastic
-                        var coefficientOfRestitution = 1.0
-
-                        if (body0.isStatic or body1.isStatic) coefficientOfRestitution = .9
+                        // Take the average of the coefficients of restitution of both bodies
+                        val coefficientOfRestitution =
+                            (body0.coefficientOfRestitution + body1.coefficientOfRestitution) / 2.0
 
                         // [deltaVelocity] serves 2 purposes:
                         // The first is to remove velocity added by [collision]
