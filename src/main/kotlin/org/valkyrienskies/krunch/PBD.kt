@@ -457,7 +457,7 @@ class Joint(
                 omega.sub(this.body0.omega)
             if (this.body1 != null)
                 omega.add(this.body1.omega)
-            omega.mul(Math.min(1.00, this.rotDamping * dt))
+            omega.mul(min(1.00, this.rotDamping * dt))
             applyBodyPairCorrection(
                 this.body0, this.body1, omega, 0.0, dt,
                 null, null, true
@@ -470,7 +470,7 @@ class Joint(
                 vel.sub(this.body0.getVelocityAt(this.globalPose0.p))
             if (this.body1 != null)
                 vel.add(this.body1.getVelocityAt(this.globalPose1.p))
-            vel.mul(Math.min(1.0, this.posDamping * dt))
+            vel.mul(min(1.0, this.posDamping * dt))
             applyBodyPairCorrection(
                 this.body0, this.body1, vel, 0.0, dt,
                 this.globalPose0.p, this.globalPose1.p, true
