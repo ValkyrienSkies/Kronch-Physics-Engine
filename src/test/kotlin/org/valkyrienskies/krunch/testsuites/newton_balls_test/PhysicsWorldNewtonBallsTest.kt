@@ -26,15 +26,15 @@ class PhysicsWorldNewtonBallsTest : PhysicsWorld() {
 
         val sphereShape = SphereShape(.5)
 
-        val firstBallBody = Body(Pose(Vector3d(0.0, 3.0, 0.0), Quaterniond()))
+        val firstBallBody = Body(Pose(Vector3d(0.0, 2.5, 0.0), Quaterniond()))
         firstBallBody.setBox(boxSize)
         firstBallBody.shape = sphereShape
 
-        val secondBallBody = Body(Pose(Vector3d(1.0, 3.0, 0.0), Quaterniond()))
+        val secondBallBody = Body(Pose(Vector3d(1.0, 2.5, 0.0), Quaterniond()))
         secondBallBody.setBox(boxSize)
         secondBallBody.shape = sphereShape
 
-        val thirdBallBody = Body(Pose(Vector3d(-1.0, 3.0, 0.0), Quaterniond()))
+        val thirdBallBody = Body(Pose(Vector3d(-1.0, 2.5, 0.0), Quaterniond()))
         thirdBallBody.setBox(boxSize)
         thirdBallBody.shape = sphereShape
 
@@ -48,45 +48,71 @@ class PhysicsWorldNewtonBallsTest : PhysicsWorld() {
         groundBody.shape = TSDFVoxelShape.createNewVoxelShape(groundBodyVoxels)
         groundBody.isStatic = true
 
+        val railDistanceFromOrigin = .45
+
         val firstRailSegmentBody = Body.createStaticBody(
-            Pose(Vector3d(0.0, 2.0, 0.3)),
+            Pose(Vector3d(0.0, 2.0, railDistanceFromOrigin)),
             BoxShape(3.0, .1, .1)
         )
         val secondRailSegmentBody = Body.createStaticBody(
-            Pose(Vector3d(3.75, 2.5, 0.3), Quaterniond().rotateAxis(Math.toRadians(15.0), 0.0, 0.0, 1.0)),
-            BoxShape(2.0, .1, .1)
+            Pose(
+                Vector3d(3.75, 2.5, railDistanceFromOrigin),
+                Quaterniond().rotateAxis(Math.toRadians(15.0), 0.0, 0.0, 1.0)
+            ),
+            BoxShape(2.5, .1, .1)
         )
         val thirdRailSegmentBody = Body.createStaticBody(
-            Pose(Vector3d(-3.75, 2.5, 0.3), Quaterniond().rotateAxis(Math.toRadians(-15.0), 0.0, 0.0, 1.0)),
-            BoxShape(2.0, .1, .1)
+            Pose(
+                Vector3d(-3.75, 2.5, railDistanceFromOrigin),
+                Quaterniond().rotateAxis(Math.toRadians(-15.0), 0.0, 0.0, 1.0)
+            ),
+            BoxShape(2.5, .1, .1)
         )
         val fourthRailSegmentBody = Body.createStaticBody(
-            Pose(Vector3d(-5.0, 3.25, 0.3), Quaterniond().rotateAxis(Math.toRadians(-30.0), 0.0, 0.0, 1.0)),
+            Pose(
+                Vector3d(-5.0, 3.25, railDistanceFromOrigin),
+                Quaterniond().rotateAxis(Math.toRadians(-30.0), 0.0, 0.0, 1.0)
+            ),
             BoxShape(2.0, .1, .1)
         )
         val fifthRailSegmentBody = Body.createStaticBody(
-            Pose(Vector3d(5.0, 3.25, 0.3), Quaterniond().rotateAxis(Math.toRadians(30.0), 0.0, 0.0, 1.0)),
+            Pose(
+                Vector3d(5.0, 3.25, railDistanceFromOrigin),
+                Quaterniond().rotateAxis(Math.toRadians(30.0), 0.0, 0.0, 1.0)
+            ),
             BoxShape(2.0, .1, .1)
         )
 
         val firstRailSegmentBodyOpposite = Body.createStaticBody(
-            Pose(Vector3d(0.0, 2.0, -0.3)),
+            Pose(Vector3d(0.0, 2.0, -railDistanceFromOrigin)),
             BoxShape(3.0, .1, .1)
         )
         val secondRailSegmentBodyOpposite = Body.createStaticBody(
-            Pose(Vector3d(3.75, 2.5, -0.3), Quaterniond().rotateAxis(Math.toRadians(15.0), 0.0, 0.0, 1.0)),
-            BoxShape(2.0, .1, .1)
+            Pose(
+                Vector3d(3.75, 2.5, -railDistanceFromOrigin),
+                Quaterniond().rotateAxis(Math.toRadians(15.0), 0.0, 0.0, 1.0)
+            ),
+            BoxShape(2.5, .1, .1)
         )
         val thirdRailSegmentBodyOpposite = Body.createStaticBody(
-            Pose(Vector3d(-3.75, 2.5, -0.3), Quaterniond().rotateAxis(Math.toRadians(-15.0), 0.0, 0.0, 1.0)),
-            BoxShape(2.0, .1, .1)
+            Pose(
+                Vector3d(-3.75, 2.5, -railDistanceFromOrigin),
+                Quaterniond().rotateAxis(Math.toRadians(-15.0), 0.0, 0.0, 1.0)
+            ),
+            BoxShape(2.5, .1, .1)
         )
         val fourthRailSegmentBodyOpposite = Body.createStaticBody(
-            Pose(Vector3d(-5.0, 3.25, -0.3), Quaterniond().rotateAxis(Math.toRadians(-30.0), 0.0, 0.0, 1.0)),
+            Pose(
+                Vector3d(-5.0, 3.25, -railDistanceFromOrigin),
+                Quaterniond().rotateAxis(Math.toRadians(-30.0), 0.0, 0.0, 1.0)
+            ),
             BoxShape(2.0, .1, .1)
         )
         val fifthRailSegmentBodyOpposite = Body.createStaticBody(
-            Pose(Vector3d(5.0, 3.25, -0.3), Quaterniond().rotateAxis(Math.toRadians(30.0), 0.0, 0.0, 1.0)),
+            Pose(
+                Vector3d(5.0, 3.25, -railDistanceFromOrigin),
+                Quaterniond().rotateAxis(Math.toRadians(30.0), 0.0, 0.0, 1.0)
+            ),
             BoxShape(2.0, .1, .1)
         )
         // endregion

@@ -16,18 +16,26 @@ class PhysicsWorldSphereBoxCollisionTest : PhysicsWorld() {
 
         val sphereShape = SphereShape(.5)
 
-        val firstBallPose = Pose(Vector3d(1.0, 5.0, 0.0), Quaterniond())
+        val firstBallPose = Pose(Vector3d(0.0, 5.0, 0.0), Quaterniond())
         val firstBallBody = Body(firstBallPose)
         firstBallBody.setBox(boxSize)
         firstBallBody.shape = sphereShape
 
-        val secondBallBody = Body(Pose(Vector3d(1.0, 3.0, 0.0), Quaterniond()))
+        val secondBallBody = Body(Pose(Vector3d(0.0, 8.0, 0.0), Quaterniond()))
         secondBallBody.setBox(boxSize)
         secondBallBody.shape = sphereShape
 
-        val thirdBallBody = Body(Pose(Vector3d(1.5, 4.0, 0.0), Quaterniond()))
+        val thirdBallBody = Body(Pose(Vector3d(0.0, 2.0, 0.0), Quaterniond()))
         thirdBallBody.setBox(boxSize)
         thirdBallBody.shape = sphereShape
+
+        val fourthBallBody = Body(Pose(Vector3d(0.0, 12.0, 0.0), Quaterniond()))
+        fourthBallBody.setBox(boxSize)
+        fourthBallBody.shape = sphereShape
+
+        val fifthBallBody = Body(Pose(Vector3d(0.0, 15.0, 0.0), Quaterniond()))
+        fifthBallBody.setBox(boxSize)
+        fifthBallBody.shape = sphereShape
 
         val firstBoxBody = Body.createStaticBody(
             Pose(Vector3d(0.0, 0.0, 0.3), Quaterniond().rotateAxis(Math.toRadians(0.0), 0.0, 0.0, 1.0)),
@@ -44,16 +52,18 @@ class PhysicsWorldSphereBoxCollisionTest : PhysicsWorld() {
         // endregion
 
         bodies.add(firstBoxBody)
-        bodies.add(secondBoxBody)
-        bodies.add(thirdBoxBody)
+        // bodies.add(secondBoxBody)
+        // bodies.add(thirdBoxBody)
 
         bodies.add(firstBallBody)
         bodies.add(secondBallBody)
         bodies.add(thirdBallBody)
+        bodies.add(fourthBallBody)
+        bodies.add(fifthBallBody)
     }
 
     override fun simulate(timeStep: Double) {
-        val gravity = Vector3d(0.0, -10.0, 1.0)
+        val gravity = Vector3d(0.0, -10.0, 0.0)
         val numSubsteps = 40
         org.valkyrienskies.krunch.simulate(bodies, joints, timeStep, numSubsteps, gravity)
     }

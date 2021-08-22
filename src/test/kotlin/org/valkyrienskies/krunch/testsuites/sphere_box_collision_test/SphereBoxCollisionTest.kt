@@ -7,6 +7,6 @@ import org.valkyrienskies.krunch.testsuites.OpenGLWindow
 class SphereBoxCollisionTest
 
 fun main(args: Array<String>) {
-    val openGLWindow = OpenGLWindow(PhysicsWorldSphereBoxCollisionTest(), cameraEyePos = Vector3f(0.0f, 8.0f, 15.0f))
+    val openGLWindow = OpenGLWindow(PhysicsWorldSphereBoxCollisionTest(), cameraEyePos = Vector3f(0.0f, 20.0f, 30.0f))
     openGLWindow.run()
 }

@@ -193,8 +193,8 @@ class OpenGLWindow(
             // Render cubes
             for (body in physicsWorld.bodies) {
                 GL11.glPushMatrix()
-                GL11.glTranslatef(body.position.x().toFloat(), body.position.y().toFloat(), body.position.z().toFloat())
-                val axisAngle = AxisAngle4d().set(body.quaternion)
+                GL11.glTranslatef(body.pose.p.x().toFloat(), body.pose.p.y().toFloat(), body.pose.p.z().toFloat())
+                val axisAngle = AxisAngle4d().set(body.pose.q)
                 GL11.glRotatef(
                     Math.toDegrees(axisAngle.angle).toFloat(), axisAngle.x.toFloat(), axisAngle.y.toFloat(),
                     axisAngle.z.toFloat()

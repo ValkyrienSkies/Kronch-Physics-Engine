@@ -6,6 +6,7 @@ import org.joml.Vector3i
 import org.joml.Vector3ic
 import org.valkyrienskies.krunch.Body
 import org.valkyrienskies.krunch.Joint
+import org.valkyrienskies.krunch.JointType.HINGE
 import org.valkyrienskies.krunch.JointType.SPHERICAL
 import org.valkyrienskies.krunch.PhysicsWorld
 import org.valkyrienskies.krunch.Pose
@@ -83,7 +84,7 @@ class PhysicsWorldChainTest : PhysicsWorld() {
 
         val secondBoxToThirdBoxJoint =
             Joint(
-                SPHERICAL, secondBoxBody, thirdBoxBody, Pose(Vector3d(.5, .5, .5), Quaterniond()),
+                HINGE, secondBoxBody, thirdBoxBody, Pose(Vector3d(.5, .5, .5), Quaterniond()),
                 Pose(Vector3d(0.5, -1.5, 0.5), Quaterniond())
             )
 
@@ -116,10 +117,12 @@ class PhysicsWorldChainTest : PhysicsWorld() {
         val numSubsteps = 40
         org.valkyrienskies.krunch.simulate(bodies, joints, timeStep, numSubsteps, gravity)
 
+        /*
         val groundBody = bodies[0]
         groundBody.pose.q.rotateY(timeStep * Math.PI / 4.0)
         groundBody.pose.q.normalize()
-        groundBody.quaternion.set(groundBody.pose.q)
         groundBody.omega.set(0.0, Math.PI / 4.0, 0.0)
+
+         */
     }
 }
