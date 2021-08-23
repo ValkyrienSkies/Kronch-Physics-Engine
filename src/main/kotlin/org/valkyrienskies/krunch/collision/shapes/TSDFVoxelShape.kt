@@ -7,9 +7,14 @@ import org.valkyrienskies.krunch.collision.voxels.IVoxelLayeredTSDF
 
 class TSDFVoxelShape : CollisionShape {
     override val sortIndex: Int = 0
-    
-    // Used in collision to offset the grid of this voxel shape
-    var shapeOffset = Vector3d()
+
+    /**
+     * The voxel position to local position is defined as the following:
+     *
+     * localPos = (voxelPos + voxelOffset) * scalingFactor
+     */
+    var voxelOffset = Vector3d()
+    var scalingFactor = 1.0
 
     val layeredTSDF: IVoxelLayeredTSDF = BasicLayeredTSDF()
 

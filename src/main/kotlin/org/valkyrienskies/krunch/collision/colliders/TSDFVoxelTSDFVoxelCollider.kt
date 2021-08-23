@@ -17,22 +17,29 @@ object TSDFVoxelTSDFVoxelCollider : Collider<TSDFVoxelShape, TSDFVoxelShape> {
     ): CollisionResultc {
         val collisionPairs = ArrayList<CollisionPairc>()
 
-        val body1To0Transform = Matrix4d()
+        val body0VoxelSpaceToLocalCoordinates =
+            Matrix4d().scale(body0Shape.scalingFactor).translate(body0Shape.voxelOffset)
+        val body1VoxelSpaceToLocalCoordinates =
+            Matrix4d().scale(body1Shape.scalingFactor).translate(body1Shape.voxelOffset)
 
-        body1To0Transform.translate(
-            -body0Shape.shapeOffset.x, -body0Shape.shapeOffset.y, -body0Shape.shapeOffset.z
+        val body1VoxelSpaceToBody0VoxelSpaceTransform = Matrix4d()
+
+        body1VoxelSpaceToBody0VoxelSpaceTransform.translate(
+            -body0Shape.voxelOffset.x, -body0Shape.voxelOffset.y, -body0Shape.voxelOffset.z
         )
-        body1To0Transform.rotate(
+        body1VoxelSpaceToBody0VoxelSpaceTransform.scale(1.0 / body0Shape.scalingFactor)
+        body1VoxelSpaceToBody0VoxelSpaceTransform.rotate(
             Quaterniond(body0Transform.q).invert()
         )
-        body1To0Transform.translate(
+        body1VoxelSpaceToBody0VoxelSpaceTransform.translate(
             body1Transform.p.x() - body0Transform.p.x(),
             body1Transform.p.y() - body0Transform.p.y(),
             body1Transform.p.z() - body0Transform.p.z()
         )
-        body1To0Transform.rotate(body1Transform.q)
-        body1To0Transform.translate(
-            body1Shape.shapeOffset.x, body1Shape.shapeOffset.y, body1Shape.shapeOffset.z
+        body1VoxelSpaceToBody0VoxelSpaceTransform.rotate(body1Transform.q)
+        body1VoxelSpaceToBody0VoxelSpaceTransform.scale(body1Shape.scalingFactor)
+        body1VoxelSpaceToBody0VoxelSpaceTransform.translate(
+            body1Shape.voxelOffset.x, body1Shape.voxelOffset.y, body1Shape.voxelOffset.z
         )
 
         body1Shape.layeredTSDF.forEachVoxel { posX, posY, posZ ->
@@ -42,23 +49,23 @@ object TSDFVoxelTSDFVoxelCollider : Collider<TSDFVoxelShape, TSDFVoxelShape> {
                     posY + yCorner * .25,
                     posZ + zCorner * .25
                 )
-                val pointPosInBody0Coordinates: Vector3dc =
-                    body1To0Transform.transformPosition(pointPosInBody1Coordinates, Vector3d())
+                val pointPosInBodyVoxelSpace0: Vector3dc =
+                    body1VoxelSpaceToBody0VoxelSpaceTransform.transformPosition(pointPosInBody1Coordinates, Vector3d())
 
                 val pointSphereRadius = .25
 
                 val closestSurfacePointOutput = Vector3d()
 
                 val wasClosestSurfacePointFound = body0Shape.layeredTSDF.getClosestPoint(
-                    pointPosInBody0Coordinates.x(), pointPosInBody0Coordinates.y(), pointPosInBody0Coordinates.z(),
+                    pointPosInBodyVoxelSpace0.x(), pointPosInBodyVoxelSpace0.y(), pointPosInBodyVoxelSpace0.z(),
                     closestSurfacePointOutput
                 )
 
                 if (wasClosestSurfacePointFound) {
-                    val distanceToClosestSurfacePoint = pointPosInBody0Coordinates.distance(closestSurfacePointOutput)
+                    val distanceToClosestSurfacePoint = pointPosInBodyVoxelSpace0.distance(closestSurfacePointOutput)
 
                     if (distanceToClosestSurfacePoint < pointSphereRadius) {
-                        val collisionNormalOutput = Vector3d(pointPosInBody0Coordinates).sub(closestSurfacePointOutput)
+                        val collisionNormalOutput = Vector3d(pointPosInBodyVoxelSpace0).sub(closestSurfacePointOutput)
 
                         if (collisionNormalOutput.lengthSquared() < 1e-12) {
                             // Avoid numerical instability
@@ -66,8 +73,8 @@ object TSDFVoxelTSDFVoxelCollider : Collider<TSDFVoxelShape, TSDFVoxelShape> {
                         }
 
                         if (body0Shape.layeredTSDF.getVoxel(
-                                pointPosInBody0Coordinates.x(), pointPosInBody0Coordinates.y(),
-                                pointPosInBody0Coordinates.z()
+                                pointPosInBodyVoxelSpace0.x(), pointPosInBodyVoxelSpace0.y(),
+                                pointPosInBodyVoxelSpace0.z()
                             )
                         ) {
                             collisionNormalOutput.mul(-1.0)
@@ -75,8 +82,12 @@ object TSDFVoxelTSDFVoxelCollider : Collider<TSDFVoxelShape, TSDFVoxelShape> {
                         collisionNormalOutput.normalize()
 
                         val body1CollisionPointInBody0Coordinates =
-                            Vector3d(pointPosInBody0Coordinates).fma(-.25, collisionNormalOutput)
-                        val body0CollisionPointInBody0Coordinates = Vector3d(closestSurfacePointOutput)
+                            body0VoxelSpaceToLocalCoordinates.transformPosition(
+                                Vector3d(pointPosInBodyVoxelSpace0).fma(-pointSphereRadius, collisionNormalOutput)
+                            )
+
+                        val body0CollisionPointInBody0Coordinates =
+                            body0VoxelSpaceToLocalCoordinates.transformPosition(Vector3d(closestSurfacePointOutput))
 
                         val normalInGlobalCoordinates = body0Transform.rotate(Vector3d(collisionNormalOutput))
 
