@@ -50,6 +50,9 @@ dependencies {
     // Junit 5 for Unit Testing
     testImplementation("org.junit.jupiter", "junit-jupiter", "5.4.2")
 
+    // Netty for PlatformDependent
+    implementation("io.netty:netty-common:4.1.67.Final")
+
     // LWJGL for Test Suites
     // LWJGL platforms are defined here https://github.com/LWJGL/lwjgl3/blob/161ca91dd9289fd7c1da4f420f10ff472f8671c7/build.gradle.kts#L61-L74
     val lwjglPlatforms = arrayOf(
