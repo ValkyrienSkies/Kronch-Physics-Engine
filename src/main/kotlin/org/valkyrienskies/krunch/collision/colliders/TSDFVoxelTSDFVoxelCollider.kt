@@ -52,7 +52,8 @@ object TSDFVoxelTSDFVoxelCollider : Collider<TSDFVoxelShape, TSDFVoxelShape> {
                 val pointPosInBodyVoxelSpace0: Vector3dc =
                     body1VoxelSpaceToBody0VoxelSpaceTransform.transformPosition(pointPosInBody1Coordinates, Vector3d())
 
-                val pointSphereRadius = .25
+                // Since we are going from body 1 voxel space to body 0 voxel space, we must scale the point size by the relative scaling factor
+                val pointSphereRadius = .25 * body1Shape.scalingFactor / body0Shape.scalingFactor
 
                 val closestSurfacePointOutput = Vector3d()
 

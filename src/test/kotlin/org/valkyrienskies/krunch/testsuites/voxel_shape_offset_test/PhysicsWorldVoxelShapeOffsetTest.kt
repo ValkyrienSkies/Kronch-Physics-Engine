@@ -31,35 +31,35 @@ class PhysicsWorldVoxelShapeOffsetTest : PhysicsWorld() {
             }
         }
 
+        val voxelOffset: Vector3ic = Vector3i(10000000, 20, 100)
+
         val bigCubeVoxels = ArrayList<Vector3ic>()
         for (x in -1..1) {
             for (y in -1..1) {
                 for (z in -1..1) {
                     if (abs(x) + abs(y) + abs(z) < 2)
-                        bigCubeVoxels.add(Vector3i(x, y, z))
+                        bigCubeVoxels.add(Vector3i(x - voxelOffset.x(), y - voxelOffset.y(), z - voxelOffset.z()))
                 }
             }
         }
         val bigCubeVoxelShape = TSDFVoxelShape.createNewVoxelShape(bigCubeVoxels)
 
-        val scalingFactor = 1.0
-
-        bigCubeVoxelShape.voxelOffset = Vector3d(0.0, 0.0, 0.0)
-        bigCubeVoxelShape.scalingFactor = .01
+        bigCubeVoxelShape.voxelOffset = Vector3d(voxelOffset)
+        bigCubeVoxelShape.scalingFactor = .5
 
         val sphereShape = SphereShape(.5)
 
-        val firstBoxPose = Pose(Vector3d(0.0, 5.0, 0.0), Quaterniond())
+        val firstBoxPose = Pose(Vector3d(-1.0, 4.0, 0.0), Quaterniond())
         val firstBoxBody = Body(firstBoxPose)
         firstBoxBody.setBox(boxSize)
         firstBoxBody.shape = bigCubeVoxelShape
 
-        val secondBoxPose = Pose(Vector3d(0.0, 3.0, 0.0), Quaterniond())
+        val secondBoxPose = Pose(Vector3d(1.0, 4.0, 0.0), Quaterniond())
         val secondBoxBody = Body(secondBoxPose)
         secondBoxBody.setBox(boxSize)
         secondBoxBody.shape = bigCubeVoxelShape
 
-        val thirdBoxPose = Pose(Vector3d(0.0, 4.0, 0.0), Quaterniond())
+        val thirdBoxPose = Pose(Vector3d(0.0, 6.0, 0.0), Quaterniond())
         val thirdBoxBody = Body(thirdBoxPose)
         thirdBoxBody.setBox(boxSize)
         thirdBoxBody.shape = bigCubeVoxelShape
@@ -76,12 +76,13 @@ class PhysicsWorldVoxelShapeOffsetTest : PhysicsWorld() {
         fifthBody.shape = bigCubeVoxelShape
         fifthBody.coefficientOfRestitution = .2
 
-        val groundPose = Pose(Vector3d(0.0, 0.0, 0.0), Quaterniond().rotateAxis(Math.toRadians(15.0), 0.0, 1.0, 1.0))
+        val groundPose = Pose(Vector3d(0.0, 0.0, 0.0), Quaterniond().rotateAxis(Math.toRadians(15.0), 1.0, 0.0, 0.0))
         val groundBody = Body(groundPose)
         groundBody.setBox(boxSize)
         groundBody.shape = TSDFVoxelShape.createNewVoxelShape(groundBodyVoxels)
-        (groundBody.shape as TSDFVoxelShape).scalingFactor = scalingFactor
+        (groundBody.shape as TSDFVoxelShape).scalingFactor = 1.5
         groundBody.isStatic = true
+        groundBody.coefficientOfRestitution = .2
 
         // endregion
 

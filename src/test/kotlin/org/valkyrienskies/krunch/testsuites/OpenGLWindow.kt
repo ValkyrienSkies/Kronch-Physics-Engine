@@ -238,13 +238,14 @@ class OpenGLWindow(
                     is TSDFVoxelShape -> {
                         GL11.glPushMatrix()
                         GL11.glScaled(bodyShape.scalingFactor, bodyShape.scalingFactor, bodyShape.scalingFactor)
-                        GL11.glTranslated(
-                            bodyShape.voxelOffset.x(), bodyShape.voxelOffset.y(), bodyShape.voxelOffset.z()
-                        )
 
                         bodyShape.layeredTSDF.forEachVoxel { posX, posY, posZ ->
                             GL11.glPushMatrix()
-                            GL11.glTranslatef(posX.toFloat(), posY.toFloat(), posZ.toFloat())
+                            GL11.glTranslatef(
+                                posX.toFloat() + bodyShape.voxelOffset.x().toFloat(),
+                                posY.toFloat() + bodyShape.voxelOffset.y().toFloat(),
+                                posZ.toFloat() + bodyShape.voxelOffset.z().toFloat()
+                            )
                             renderCube()
                             GL11.glPopMatrix()
                         }
