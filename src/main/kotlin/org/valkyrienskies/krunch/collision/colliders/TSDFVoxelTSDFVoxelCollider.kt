@@ -10,6 +10,7 @@ import org.valkyrienskies.krunch.collision.CollisionPairc
 import org.valkyrienskies.krunch.collision.CollisionResult
 import org.valkyrienskies.krunch.collision.CollisionResultc
 import org.valkyrienskies.krunch.collision.shapes.TSDFVoxelShape
+import kotlin.math.abs
 
 object TSDFVoxelTSDFVoxelCollider : Collider<TSDFVoxelShape, TSDFVoxelShape> {
     override fun computeCollisionBetweenShapes(
@@ -19,8 +20,6 @@ object TSDFVoxelTSDFVoxelCollider : Collider<TSDFVoxelShape, TSDFVoxelShape> {
 
         val body0VoxelSpaceToLocalCoordinates =
             Matrix4d().scale(body0Shape.scalingFactor).translate(body0Shape.voxelOffset)
-        val body1VoxelSpaceToLocalCoordinates =
-            Matrix4d().scale(body1Shape.scalingFactor).translate(body1Shape.voxelOffset)
 
         val body1VoxelSpaceToBody0VoxelSpaceTransform = Matrix4d()
 
@@ -53,7 +52,7 @@ object TSDFVoxelTSDFVoxelCollider : Collider<TSDFVoxelShape, TSDFVoxelShape> {
                     body1VoxelSpaceToBody0VoxelSpaceTransform.transformPosition(pointPosInBody1Coordinates, Vector3d())
 
                 // Since we are going from body 1 voxel space to body 0 voxel space, we must scale the point size by the relative scaling factor
-                val pointSphereRadius = .25 * body1Shape.scalingFactor / body0Shape.scalingFactor
+                val pointSphereRadius = abs(.25 * body1Shape.scalingFactor / body0Shape.scalingFactor)
 
                 val closestSurfacePointOutput = Vector3d()
 
@@ -91,6 +90,11 @@ object TSDFVoxelTSDFVoxelCollider : Collider<TSDFVoxelShape, TSDFVoxelShape> {
                             body0VoxelSpaceToLocalCoordinates.transformPosition(Vector3d(closestSurfacePointOutput))
 
                         val normalInGlobalCoordinates = body0Transform.rotate(Vector3d(collisionNormalOutput))
+
+                        // If body0Shape has negative scaling, then flip the normal
+                        if (body0Shape.scalingFactor < 0) {
+                            normalInGlobalCoordinates.mul(-1.0)
+                        }
 
                         val body1CollisionPointInBody1Coordinates = body1Transform.invTransform(
                             body0Transform.transform(
