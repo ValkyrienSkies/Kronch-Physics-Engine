@@ -12,7 +12,10 @@ object SphereSphereCollider : Collider<SphereShape, SphereShape> {
         body0Shape: SphereShape, body0Transform: Pose, body1Shape: SphereShape, body1Transform: Pose
     ): CollisionResultc? {
         val difference = Vector3d(body1Transform.p).sub(body0Transform.p)
-        if ((difference.lengthSquared() > 1e-12) and (difference.lengthSquared() < (body0Shape.radius + body1Shape.radius) * (body0Shape.radius + body1Shape.radius))) {
+        val differenceLengthSq = difference.lengthSquared()
+        if ((differenceLengthSq > 1e-12) &&
+            (differenceLengthSq < (body0Shape.radius + body1Shape.radius) * (body0Shape.radius + body1Shape.radius))
+        ) {
             val normal = Vector3d(difference).normalize()
             val body0DeepestPoint =
                 body0Transform.invTransform(Vector3d(body0Transform.p).fma(body0Shape.radius, normal))

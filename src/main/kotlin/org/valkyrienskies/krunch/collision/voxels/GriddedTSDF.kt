@@ -6,9 +6,6 @@ class GriddedTSDF : IVoxelLayeredTSDF {
     private val voxelWorld = LongDataWorld()
 
     override fun setVoxel(posX: Int, posY: Int, posZ: Int, set: Boolean) {
-        if (set) {
-
-        }
         TODO("Not yet implemented")
     }
 

@@ -71,7 +71,9 @@ class BasicLayeredTSDF : IVoxelLayeredTSDF {
         val closestPointZ = min(max(posZ, voxelZ - .5), voxelZ + .5)
 
         val absoluteDistanceSq =
-            (closestPointX - posX) * (closestPointX - posX) + (closestPointY - posY) * (closestPointY - posY) + (closestPointZ - posZ) * (closestPointZ - posZ)
+            (closestPointX - posX) * (closestPointX - posX) +
+                (closestPointY - posY) * (closestPointY - posY) +
+                (closestPointZ - posZ) * (closestPointZ - posZ)
 
         function(absoluteDistanceSq, closestPointX, closestPointY, closestPointZ)
     }
