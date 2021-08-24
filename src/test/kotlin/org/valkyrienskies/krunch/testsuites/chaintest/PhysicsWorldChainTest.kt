@@ -111,18 +111,4 @@ class PhysicsWorldChainTest : PhysicsWorld() {
         joints.add(firstBoxToSecondBoxJoint)
         joints.add(secondBoxToThirdBoxJoint)
     }
-
-    override fun simulate(timeStep: Double) {
-        val gravity = Vector3d(0.0, -10.0, 0.0)
-        val numSubsteps = 40
-        org.valkyrienskies.krunch.simulate(bodies, joints, timeStep, numSubsteps, gravity)
-
-        /*
-        val groundBody = bodies[0]
-        groundBody.pose.q.rotateY(timeStep * Math.PI / 4.0)
-        groundBody.pose.q.normalize()
-        groundBody.omega.set(0.0, Math.PI / 4.0, 0.0)
-
-         */
-    }
 }

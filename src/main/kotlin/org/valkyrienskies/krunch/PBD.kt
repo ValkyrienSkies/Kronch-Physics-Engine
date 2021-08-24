@@ -129,9 +129,9 @@ class Body(_pose: Pose) {
         this.pose.q.normalize()
     }
 
-    fun integrate(dt: Double, gravity: Vector3d) {
+    fun integrate(dt: Double, gravity: Vector3dc) {
         this.prevPose.copy(this.pose)
-        this.vel.add(gravity.x * dt, gravity.y * dt, gravity.z * dt)
+        this.vel.add(gravity.x() * dt, gravity.y() * dt, gravity.z() * dt)
         this.pose.p.add(this.vel.x * dt, this.vel.y * dt, this.vel.z * dt)
         this.applyRotation(this.omega, dt)
     }
@@ -479,7 +479,7 @@ class Joint(
     }
 }
 
-fun simulate(bodies: List<Body>, joints: List<Joint>, timeStep: Double, numSubsteps: Int, gravity: Vector3d) {
+fun simulate(bodies: List<Body>, joints: List<Joint>, timeStep: Double, numSubsteps: Int, gravity: Vector3dc) {
     val dt = timeStep / numSubsteps
 
     for (step in 0 until numSubsteps) {

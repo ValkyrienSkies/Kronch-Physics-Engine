@@ -3,6 +3,8 @@ package org.valkyrienskies.krunch.testsuites
 import org.joml.AxisAngle4d
 import org.joml.Matrix4f
 import org.joml.Matrix4x3f
+import org.joml.Vector3d
+import org.joml.Vector3dc
 import org.joml.Vector3f
 import org.joml.Vector3fc
 import org.joml.Vector4f
@@ -27,7 +29,9 @@ import java.nio.FloatBuffer
 class OpenGLWindow(
     private val physicsWorld: PhysicsWorld,
     private val cameraEyePos: Vector3fc = Vector3f(0.0f, 4.0f, 10.0f),
-    private val cameraLookAtPos: Vector3fc = Vector3f(0.0f, 0.0f, 0.0f)
+    private val cameraLookAtPos: Vector3fc = Vector3f(0.0f, 0.0f, 0.0f),
+    private val gravity: Vector3dc = Vector3d(0.0, -10.0, 0.0),
+    private val numSubSteps: Int = 40
 ) {
     var errorCallback: GLFWErrorCallback? = null
     var keyCallback: GLFWKeyCallback? = null
@@ -197,7 +201,7 @@ class OpenGLWindow(
             val diff = (thisTime - lastTime) / 1E9f
 
             // Run physics
-            physicsWorld.simulate(1.0 / 60.0)
+            physicsWorld.simulate(gravity, numSubSteps, 1.0 / 60.0)
 
             Thread.sleep(1000 / 60)
             // Compute some rotation angle.

@@ -93,10 +93,4 @@ class PhysicsWorldVoxelShapeOffsetTest : PhysicsWorld() {
         bodies.add(fourthBoxBody)
         bodies.add(fifthBody)
     }
-
-    override fun simulate(timeStep: Double) {
-        val gravity = Vector3d(0.0, -10.0, 0.0)
-        val numSubsteps = 40
-        org.valkyrienskies.krunch.simulate(bodies, joints, timeStep, numSubsteps, gravity)
-    }
 }

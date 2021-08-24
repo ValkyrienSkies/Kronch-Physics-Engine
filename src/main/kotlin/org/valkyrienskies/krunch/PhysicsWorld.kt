@@ -1,14 +1,12 @@
 package org.valkyrienskies.krunch
 
-import org.joml.Vector3d
+import org.joml.Vector3dc
 
 open class PhysicsWorld {
     val bodies: MutableList<Body> = ArrayList()
     val joints: MutableList<Joint> = ArrayList()
 
-    open fun simulate(timeStep: Double) {
-        val gravity = Vector3d(0.0, -10.0, 0.0)
-        val numSubsteps = 40
-        simulate(bodies, joints, timeStep, numSubsteps, gravity)
+    open fun simulate(gravity: Vector3dc, numSubSteps: Int, timeStep: Double) {
+        simulate(bodies, joints, timeStep, numSubSteps, gravity)
     }
 }
