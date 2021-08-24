@@ -25,13 +25,15 @@ object SphereBoxCollider : Collider<SphereShape, BoxShape> {
         )
 
         val isSphereCenterWithinBox =
-            (abs(spherePosRelativeToBox.x()) < body1Shape.xRadius)
-                && (abs(spherePosRelativeToBox.y()) < body1Shape.yRadius)
-                && (abs(spherePosRelativeToBox.z()) < body1Shape.zRadius)
+            (abs(spherePosRelativeToBox.x()) < body1Shape.xRadius) &&
+                (abs(spherePosRelativeToBox.y()) < body1Shape.yRadius) &&
+                (abs(spherePosRelativeToBox.z()) < body1Shape.zRadius)
 
         val difference =
             body1Transform.transform(Vector3d(closestPointRelativeToBoxInBody1Coordinates)).sub(body0Transform.p)
-        if ((difference.lengthSquared() < body0Shape.radius * body0Shape.radius) && difference.lengthSquared() > 1e-12) {
+        if ((difference.lengthSquared() < body0Shape.radius * body0Shape.radius) &&
+            difference.lengthSquared() > 1e-12
+        ) {
             val normal = Vector3d(difference).normalize()
             val deepestSpherePoint = Vector3d(body0Transform.p)
             if (!isSphereCenterWithinBox) {
