@@ -5,7 +5,6 @@ import org.joml.Vector3dc
 import org.valkyrienskies.krunch.Pose
 import org.valkyrienskies.krunch.collision.CollisionPair
 import org.valkyrienskies.krunch.collision.CollisionResult
-import org.valkyrienskies.krunch.collision.CollisionResultc
 import org.valkyrienskies.krunch.collision.shapes.BoxShape
 import org.valkyrienskies.krunch.collision.shapes.SphereShape
 import kotlin.math.abs
@@ -15,7 +14,7 @@ import kotlin.math.min
 object SphereBoxCollider : Collider<SphereShape, BoxShape> {
     override fun computeCollisionBetweenShapes(
         body0Shape: SphereShape, body0Transform: Pose, body1Shape: BoxShape, body1Transform: Pose
-    ): CollisionResultc? {
+    ): CollisionResult? {
         val spherePosRelativeToBox: Vector3dc = body1Transform.invTransform(Vector3d(body0Transform.p))
 
         val closestPointRelativeToBoxInBody1Coordinates = Vector3d(

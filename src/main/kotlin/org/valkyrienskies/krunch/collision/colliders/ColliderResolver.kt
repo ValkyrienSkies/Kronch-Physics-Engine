@@ -1,7 +1,7 @@
 package org.valkyrienskies.krunch.collision.colliders
 
 import org.valkyrienskies.krunch.Pose
-import org.valkyrienskies.krunch.collision.CollisionResultc
+import org.valkyrienskies.krunch.collision.CollisionResult
 import org.valkyrienskies.krunch.collision.shapes.BoxShape
 import org.valkyrienskies.krunch.collision.shapes.CollisionShape
 import org.valkyrienskies.krunch.collision.shapes.CombinedShape
@@ -11,7 +11,7 @@ import org.valkyrienskies.krunch.collision.shapes.TSDFVoxelShape
 object ColliderResolver : Collider<CollisionShape, CollisionShape> {
     override fun computeCollisionBetweenShapes(
         body0Shape: CollisionShape, body0Transform: Pose, body1Shape: CollisionShape, body1Transform: Pose
-    ): CollisionResultc? {
+    ): CollisionResult? {
         return when {
             (body0Shape is CombinedShape) -> {
                 CombinedShapeCollider.computeCollisionBetweenShapes(

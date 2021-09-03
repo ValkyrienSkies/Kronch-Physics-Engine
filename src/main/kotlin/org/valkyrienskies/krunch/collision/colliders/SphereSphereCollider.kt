@@ -4,13 +4,12 @@ import org.joml.Vector3d
 import org.valkyrienskies.krunch.Pose
 import org.valkyrienskies.krunch.collision.CollisionPair
 import org.valkyrienskies.krunch.collision.CollisionResult
-import org.valkyrienskies.krunch.collision.CollisionResultc
 import org.valkyrienskies.krunch.collision.shapes.SphereShape
 
 object SphereSphereCollider : Collider<SphereShape, SphereShape> {
     override fun computeCollisionBetweenShapes(
         body0Shape: SphereShape, body0Transform: Pose, body1Shape: SphereShape, body1Transform: Pose
-    ): CollisionResultc? {
+    ): CollisionResult? {
         val difference = Vector3d(body1Transform.p).sub(body0Transform.p)
         val differenceLengthSq = difference.lengthSquared()
         if ((differenceLengthSq > 1e-12) &&

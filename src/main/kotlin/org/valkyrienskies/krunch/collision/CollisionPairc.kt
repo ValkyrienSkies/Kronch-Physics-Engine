@@ -4,12 +4,18 @@ import org.joml.Vector3dc
 
 /**
  * Immutable view of [CollisionPair].
+ *
+ * Note that only [positionInFirstBody], [positionInSecondBody], and [originalCollisionNormal] are immutable.
+ *
+ * The other fields are updated during sub-steps and iterations.
  */
 interface CollisionPairc {
     val positionInFirstBody: Vector3dc
     val positionInSecondBody: Vector3dc
-    val normal: Vector3dc
-    var used: Boolean
-    var normalLambda: Double
-    var tangentialLambda: Double
+    val originalCollisionNormal: Vector3dc
+    val skipThisSubStep: Boolean
+    val normalThisSubStep: Vector3dc
+    val usedThisSubStep: Boolean
+    val normalLambdaThisSubStep: Double
+    val tangentialLambdaThisSubStep: Double
 }

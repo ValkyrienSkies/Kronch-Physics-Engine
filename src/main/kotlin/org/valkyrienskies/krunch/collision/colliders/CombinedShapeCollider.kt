@@ -4,18 +4,16 @@ import org.joml.Vector3d
 import org.joml.Vector3dc
 import org.valkyrienskies.krunch.Pose
 import org.valkyrienskies.krunch.collision.CollisionPair
-import org.valkyrienskies.krunch.collision.CollisionPairc
 import org.valkyrienskies.krunch.collision.CollisionResult
-import org.valkyrienskies.krunch.collision.CollisionResultc
 import org.valkyrienskies.krunch.collision.shapes.CollisionShape
 import org.valkyrienskies.krunch.collision.shapes.CombinedShape
 
 object CombinedShapeCollider : Collider<CombinedShape, CollisionShape> {
     override fun computeCollisionBetweenShapes(
         body0Shape: CombinedShape, body0Transform: Pose, body1Shape: CollisionShape, body1Transform: Pose
-    ): CollisionResultc? {
+    ): CollisionResult? {
         var minDepth = Double.MAX_VALUE
-        var minCollisionPair: CollisionPairc? = null
+        var minCollisionPair: CollisionPair? = null
         for (pair in body0Shape.collisionShapes) {
             val shape = pair.first
             val pose = pair.second
@@ -33,13 +31,13 @@ object CombinedShapeCollider : Collider<CombinedShape, CollisionShape> {
                 )
                 val difference = Vector3d(body1CollisionPointGlobal).sub(body0CollisionPointGlobal)
 
-                val depth = it.normal.dot(difference)
+                val depth = it.originalCollisionNormal.dot(difference)
 
                 if (depth < minDepth) {
                     minDepth = depth
                     minCollisionPair = CollisionPair(
                         body0Transform.invTransform(Vector3d(body0CollisionPointGlobal)), it.positionInSecondBody,
-                        it.normal
+                        it.originalCollisionNormal
                     )
                 }
             }

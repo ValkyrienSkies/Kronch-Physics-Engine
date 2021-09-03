@@ -5,14 +5,13 @@ import org.joml.Vector3dc
 import org.valkyrienskies.krunch.Pose
 import org.valkyrienskies.krunch.collision.CollisionPair
 import org.valkyrienskies.krunch.collision.CollisionResult
-import org.valkyrienskies.krunch.collision.CollisionResultc
 import org.valkyrienskies.krunch.collision.shapes.SphereShape
 import org.valkyrienskies.krunch.collision.shapes.TSDFVoxelShape
 
 object SphereTSDFVoxelCollider : Collider<SphereShape, TSDFVoxelShape> {
     override fun computeCollisionBetweenShapes(
         body0Shape: SphereShape, body0Transform: Pose, body1Shape: TSDFVoxelShape, body1Transform: Pose
-    ): CollisionResultc? {
+    ): CollisionResult? {
         val spherePosInBody1Coordinates: Vector3dc = body1Transform.invTransform(Vector3d(body0Transform.p))
 
         val closestSurfacePointOutput = Vector3d()

@@ -6,17 +6,15 @@ import org.joml.Vector3d
 import org.joml.Vector3dc
 import org.valkyrienskies.krunch.Pose
 import org.valkyrienskies.krunch.collision.CollisionPair
-import org.valkyrienskies.krunch.collision.CollisionPairc
 import org.valkyrienskies.krunch.collision.CollisionResult
-import org.valkyrienskies.krunch.collision.CollisionResultc
 import org.valkyrienskies.krunch.collision.shapes.TSDFVoxelShape
 import kotlin.math.abs
 
 object TSDFVoxelTSDFVoxelCollider : Collider<TSDFVoxelShape, TSDFVoxelShape> {
     override fun computeCollisionBetweenShapes(
         body0Shape: TSDFVoxelShape, body0Transform: Pose, body1Shape: TSDFVoxelShape, body1Transform: Pose
-    ): CollisionResultc {
-        val collisionPairs = ArrayList<CollisionPairc>()
+    ): CollisionResult {
+        val collisionPairs = ArrayList<CollisionPair>()
 
         val body0VoxelSpaceToLocalCoordinates =
             Matrix4d().scale(body0Shape.scalingFactor).translate(body0Shape.voxelOffset)
