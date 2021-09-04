@@ -58,7 +58,6 @@ object SphereBoxCollider : Collider<SphereShape, BoxShape> {
             body1AngularVelocity, dt
         )
 
-
         if (difference.length() + relativeVelocity - speculativeThreshold < body0Shape.radius) {
 
             return CollisionResult(
