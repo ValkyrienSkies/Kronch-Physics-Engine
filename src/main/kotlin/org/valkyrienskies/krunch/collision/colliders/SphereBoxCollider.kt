@@ -5,17 +5,26 @@ import org.joml.Vector3dc
 import org.valkyrienskies.krunch.Pose
 import org.valkyrienskies.krunch.collision.CollisionPair
 import org.valkyrienskies.krunch.collision.CollisionResult
-import org.valkyrienskies.krunch.collision.CollisionResultc
 import org.valkyrienskies.krunch.collision.shapes.BoxShape
 import org.valkyrienskies.krunch.collision.shapes.SphereShape
+import org.valkyrienskies.krunch.computeRelativeVelocity
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
 object SphereBoxCollider : Collider<SphereShape, BoxShape> {
     override fun computeCollisionBetweenShapes(
-        body0Shape: SphereShape, body0Transform: Pose, body1Shape: BoxShape, body1Transform: Pose
-    ): CollisionResultc? {
+        body0Shape: SphereShape,
+        body0Transform: Pose,
+        body0Velocity: Vector3dc,
+        body0AngularVelocity: Vector3dc,
+        body1Shape: BoxShape,
+        body1Transform: Pose,
+        body1Velocity: Vector3dc,
+        body1AngularVelocity: Vector3dc,
+        dt: Double,
+        speculativeThreshold: Double
+    ): CollisionResult? {
         val spherePosRelativeToBox: Vector3dc = body1Transform.invTransform(Vector3d(body0Transform.p))
 
         val closestPointRelativeToBoxInBody1Coordinates = Vector3d(
@@ -31,16 +40,27 @@ object SphereBoxCollider : Collider<SphereShape, BoxShape> {
 
         val difference =
             body1Transform.transform(Vector3d(closestPointRelativeToBoxInBody1Coordinates)).sub(body0Transform.p)
-        if ((difference.lengthSquared() < body0Shape.radius * body0Shape.radius) &&
-            difference.lengthSquared() > 1e-12
-        ) {
-            val normal = Vector3d(difference).normalize()
-            val deepestSpherePoint = Vector3d(body0Transform.p)
-            if (!isSphereCenterWithinBox) {
-                deepestSpherePoint.fma(body0Shape.radius, normal)
-            } else {
-                deepestSpherePoint.fma(-body0Shape.radius, normal)
-            }
+
+        if (difference.lengthSquared() < 1e-12) return null
+
+        val normal = Vector3d(difference).normalize()
+
+        val deepestSpherePoint = Vector3d(body0Transform.p)
+        if (!isSphereCenterWithinBox) {
+            deepestSpherePoint.fma(body0Shape.radius, normal)
+        } else {
+            deepestSpherePoint.fma(-body0Shape.radius, normal)
+        }
+
+        val relativeVelocity = computeRelativeVelocity(
+            normal, body0Transform.invTransform(Vector3d(deepestSpherePoint)),
+            closestPointRelativeToBoxInBody1Coordinates, body0Velocity, body0AngularVelocity, body1Velocity,
+            body1AngularVelocity, dt
+        )
+
+
+        if (difference.length() + relativeVelocity - speculativeThreshold < body0Shape.radius) {
+
             return CollisionResult(
                 listOf(
                     CollisionPair(

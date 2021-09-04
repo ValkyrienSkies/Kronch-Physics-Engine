@@ -6,17 +6,25 @@ import org.joml.Vector3d
 import org.joml.Vector3dc
 import org.valkyrienskies.krunch.Pose
 import org.valkyrienskies.krunch.collision.CollisionPair
-import org.valkyrienskies.krunch.collision.CollisionPairc
 import org.valkyrienskies.krunch.collision.CollisionResult
-import org.valkyrienskies.krunch.collision.CollisionResultc
 import org.valkyrienskies.krunch.collision.shapes.TSDFVoxelShape
+import org.valkyrienskies.krunch.computeRelativeVelocity
 import kotlin.math.abs
 
 object TSDFVoxelTSDFVoxelCollider : Collider<TSDFVoxelShape, TSDFVoxelShape> {
     override fun computeCollisionBetweenShapes(
-        body0Shape: TSDFVoxelShape, body0Transform: Pose, body1Shape: TSDFVoxelShape, body1Transform: Pose
-    ): CollisionResultc {
-        val collisionPairs = ArrayList<CollisionPairc>()
+        body0Shape: TSDFVoxelShape,
+        body0Transform: Pose,
+        body0Velocity: Vector3dc,
+        body0AngularVelocity: Vector3dc,
+        body1Shape: TSDFVoxelShape,
+        body1Transform: Pose,
+        body1Velocity: Vector3dc,
+        body1AngularVelocity: Vector3dc,
+        dt: Double,
+        speculativeThreshold: Double
+    ): CollisionResult {
+        val collisionPairs = ArrayList<CollisionPair>()
 
         val body0VoxelSpaceToLocalCoordinates =
             Matrix4d().scale(body0Shape.scalingFactor).translate(body0Shape.voxelOffset)
@@ -64,49 +72,55 @@ object TSDFVoxelTSDFVoxelCollider : Collider<TSDFVoxelShape, TSDFVoxelShape> {
                 if (wasClosestSurfacePointFound) {
                     val distanceToClosestSurfacePoint = pointPosInBodyVoxelSpace0.distance(closestSurfacePointOutput)
 
-                    if (distanceToClosestSurfacePoint < pointSphereRadius) {
-                        val collisionNormalOutput = Vector3d(pointPosInBodyVoxelSpace0).sub(closestSurfacePointOutput)
+                    val collisionNormalOutput = Vector3d(pointPosInBodyVoxelSpace0).sub(closestSurfacePointOutput)
 
-                        if (collisionNormalOutput.lengthSquared() < 1e-12) {
-                            // Avoid numerical instability
-                            return@forEachCorner
-                        }
+                    if (collisionNormalOutput.lengthSquared() < 1e-12) {
+                        // Avoid numerical instability
+                        return@forEachCorner
+                    }
 
-                        if (body0Shape.layeredTSDF.getVoxel(
-                                pointPosInBodyVoxelSpace0.x(), pointPosInBodyVoxelSpace0.y(),
-                                pointPosInBodyVoxelSpace0.z()
-                            )
-                        ) {
-                            collisionNormalOutput.mul(-1.0)
-                        }
-                        collisionNormalOutput.normalize()
+                    if (body0Shape.layeredTSDF.getVoxel(
+                            pointPosInBodyVoxelSpace0.x(), pointPosInBodyVoxelSpace0.y(),
+                            pointPosInBodyVoxelSpace0.z()
+                        )
+                    ) {
+                        collisionNormalOutput.mul(-1.0)
+                    }
+                    collisionNormalOutput.normalize()
 
-                        val body1CollisionPointInBody0Coordinates =
-                            body0VoxelSpaceToLocalCoordinates.transformPosition(
-                                Vector3d(pointPosInBodyVoxelSpace0).fma(-pointSphereRadius, collisionNormalOutput)
-                            )
-
-                        val body0CollisionPointInBody0Coordinates =
-                            body0VoxelSpaceToLocalCoordinates.transformPosition(Vector3d(closestSurfacePointOutput))
-
-                        val normalInGlobalCoordinates = body0Transform.rotate(Vector3d(collisionNormalOutput))
-
-                        // If body0Shape has negative scaling, then flip the normal
-                        if (body0Shape.scalingFactor < 0) {
-                            normalInGlobalCoordinates.mul(-1.0)
-                        }
-
-                        val body1CollisionPointInBody1Coordinates = body1Transform.invTransform(
-                            body0Transform.transform(
-                                Vector3d(body1CollisionPointInBody0Coordinates)
-                            )
+                    val body1CollisionPointInBody0Coordinates =
+                        body0VoxelSpaceToLocalCoordinates.transformPosition(
+                            Vector3d(pointPosInBodyVoxelSpace0).fma(-pointSphereRadius, collisionNormalOutput)
                         )
 
-                        val collisionPair = CollisionPair(
-                            body0CollisionPointInBody0Coordinates, body1CollisionPointInBody1Coordinates,
-                            normalInGlobalCoordinates
-                        )
+                    val body0CollisionPointInBody0Coordinates =
+                        body0VoxelSpaceToLocalCoordinates.transformPosition(Vector3d(closestSurfacePointOutput))
 
+                    val normalInGlobalCoordinates = body0Transform.rotate(Vector3d(collisionNormalOutput))
+
+                    // If body0Shape has negative scaling, then flip the normal
+                    if (body0Shape.scalingFactor < 0) {
+                        normalInGlobalCoordinates.mul(-1.0)
+                    }
+
+                    val body1CollisionPointInBody1Coordinates = body1Transform.invTransform(
+                        body0Transform.transform(
+                            Vector3d(body1CollisionPointInBody0Coordinates)
+                        )
+                    )
+
+                    val collisionPair = CollisionPair(
+                        body0CollisionPointInBody0Coordinates, body1CollisionPointInBody1Coordinates,
+                        normalInGlobalCoordinates
+                    )
+
+                    val relativeVelocity = computeRelativeVelocity(
+                        normalInGlobalCoordinates, body0CollisionPointInBody0Coordinates,
+                        body1CollisionPointInBody1Coordinates, body0Velocity, body0AngularVelocity, body1Velocity,
+                        body1AngularVelocity, dt
+                    )
+
+                    if (distanceToClosestSurfacePoint + relativeVelocity - speculativeThreshold < pointSphereRadius) {
                         collisionPairs.add(collisionPair)
                     }
                 }
