@@ -39,10 +39,10 @@ class Joint(
     }
 
     fun updateGlobalPoses() {
-        this.globalPose0.copy(this.localPose0)
+        this.globalPose0.set(this.localPose0)
         if (this.body0 != null)
             this.body0.pose.transformPose(this.globalPose0)
-        this.globalPose1.copy(this.localPose1)
+        this.globalPose1.set(this.localPose1)
         if (this.body1 != null)
             this.body1.pose.transformPose(this.globalPose1)
     }

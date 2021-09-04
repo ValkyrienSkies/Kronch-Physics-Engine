@@ -63,7 +63,7 @@ class Body(_pose: Pose) {
     }
 
     fun integrate(dt: Double, gravity: Vector3dc) {
-        this.prevPose.copy(this.pose)
+        this.prevPose.set(this.pose)
         this.vel.add(gravity.x() * dt, gravity.y() * dt, gravity.z() * dt)
         this.pose.p.add(this.vel.x * dt, this.vel.y * dt, this.vel.z * dt)
         this.applyRotation(this.omega, dt)

@@ -4,7 +4,7 @@ import org.joml.Matrix4d
 import org.joml.Quaterniond
 import org.joml.Vector3d
 import org.joml.Vector3dc
-import org.valkyrienskies.krunch.Pose
+import org.valkyrienskies.krunch.Posec
 import org.valkyrienskies.krunch.collision.CollisionPair
 import org.valkyrienskies.krunch.collision.CollisionResult
 import org.valkyrienskies.krunch.collision.shapes.TSDFVoxelShape
@@ -14,11 +14,11 @@ import kotlin.math.abs
 object TSDFVoxelTSDFVoxelCollider : Collider<TSDFVoxelShape, TSDFVoxelShape> {
     override fun computeCollisionBetweenShapes(
         body0Shape: TSDFVoxelShape,
-        body0Transform: Pose,
+        body0Transform: Posec,
         body0Velocity: Vector3dc,
         body0AngularVelocity: Vector3dc,
         body1Shape: TSDFVoxelShape,
-        body1Transform: Pose,
+        body1Transform: Posec,
         body1Velocity: Vector3dc,
         body1AngularVelocity: Vector3dc,
         dt: Double,

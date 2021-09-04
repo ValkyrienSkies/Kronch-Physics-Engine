@@ -1,7 +1,7 @@
 package org.valkyrienskies.krunch.collision.colliders
 
 import org.joml.Vector3dc
-import org.valkyrienskies.krunch.Pose
+import org.valkyrienskies.krunch.Posec
 import org.valkyrienskies.krunch.collision.CollisionResult
 import org.valkyrienskies.krunch.collision.shapes.CollisionShape
 import org.valkyrienskies.krunch.collision.shapes.CombinedShape
@@ -9,11 +9,11 @@ import org.valkyrienskies.krunch.collision.shapes.CombinedShape
 object CombinedShapeCollider : Collider<CombinedShape, CollisionShape> {
     override fun computeCollisionBetweenShapes(
         body0Shape: CombinedShape,
-        body0Transform: Pose,
+        body0Transform: Posec,
         body0Velocity: Vector3dc,
         body0AngularVelocity: Vector3dc,
         body1Shape: CollisionShape,
-        body1Transform: Pose,
+        body1Transform: Posec,
         body1Velocity: Vector3dc,
         body1AngularVelocity: Vector3dc,
         dt: Double,

@@ -5,33 +5,33 @@ import org.joml.Vector3d
 import org.joml.Vector3dc
 
 class Pose(
-    val p: Vector3d = Vector3d(0.0, 0.0, 0.0),
-    val q: Quaterniond = Quaterniond(0.0, 0.0, 0.0, 1.0)
-) {
+    override val p: Vector3d = Vector3d(0.0, 0.0, 0.0),
+    override val q: Quaterniond = Quaterniond(0.0, 0.0, 0.0, 1.0)
+) : Posec {
 
-    fun copy(pose: Pose) {
+    fun set(pose: Pose) {
         this.p.set(pose.p)
         this.q.set(pose.q)
     }
 
-    fun clone() = Pose(Vector3d(p), Quaterniond(q))
+    override fun clone() = Pose(Vector3d(p), Quaterniond(q))
 
-    fun rotate(v: Vector3d): Vector3d {
+    override fun rotate(v: Vector3d): Vector3d {
         v.rotate(this.q)
         return v
     }
 
-    fun invRotate(v: Vector3d) {
+    override fun invRotate(v: Vector3d) {
         this.q.transformInverse(v)
     }
 
-    fun transform(v: Vector3d): Vector3d {
+    override fun transform(v: Vector3d): Vector3d {
         v.rotate(this.q)
         v.add(this.p)
         return v
     }
 
-    fun invTransform(v: Vector3d): Vector3d {
+    override fun invTransform(v: Vector3d): Vector3d {
         v.sub(this.p)
         this.invRotate(v)
         return v
