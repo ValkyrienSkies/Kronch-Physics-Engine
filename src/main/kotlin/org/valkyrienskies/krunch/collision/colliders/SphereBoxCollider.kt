@@ -7,7 +7,7 @@ import org.valkyrienskies.krunch.collision.CollisionPair
 import org.valkyrienskies.krunch.collision.CollisionResult
 import org.valkyrienskies.krunch.collision.shapes.BoxShape
 import org.valkyrienskies.krunch.collision.shapes.SphereShape
-import org.valkyrienskies.krunch.computeRelativeVelocity
+import org.valkyrienskies.krunch.computeRelativeVelocityBetweenCollisionPointsAlongNormal
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -52,11 +52,17 @@ object SphereBoxCollider : Collider<SphereShape, BoxShape> {
             deepestSpherePoint.fma(-body0Shape.radius, normal)
         }
 
-        val relativeVelocity = computeRelativeVelocity(
-            normal, body0Transform.invTransform(Vector3d(deepestSpherePoint)),
-            closestPointRelativeToBoxInBody1Coordinates, body0Velocity, body0AngularVelocity, body1Velocity,
-            body1AngularVelocity, dt
-        )
+        val relativeVelocity = computeRelativeVelocityBetweenCollisionPointsAlongNormal(
+            normal,
+            body0Transform.invTransform(Vector3d(deepestSpherePoint)),
+            closestPointRelativeToBoxInBody1Coordinates,
+            body0Transform,
+            body0Velocity,
+            body0AngularVelocity,
+            body1Transform,
+            body1Velocity,
+            body1AngularVelocity,
+        ) * dt
 
         if (difference.length() + relativeVelocity - speculativeThreshold < body0Shape.radius) {
 

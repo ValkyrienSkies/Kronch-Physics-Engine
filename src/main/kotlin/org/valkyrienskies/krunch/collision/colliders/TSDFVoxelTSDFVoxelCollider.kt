@@ -8,7 +8,7 @@ import org.valkyrienskies.krunch.Pose
 import org.valkyrienskies.krunch.collision.CollisionPair
 import org.valkyrienskies.krunch.collision.CollisionResult
 import org.valkyrienskies.krunch.collision.shapes.TSDFVoxelShape
-import org.valkyrienskies.krunch.computeRelativeVelocity
+import org.valkyrienskies.krunch.computeRelativeVelocityBetweenCollisionPointsAlongNormal
 import kotlin.math.abs
 
 object TSDFVoxelTSDFVoxelCollider : Collider<TSDFVoxelShape, TSDFVoxelShape> {
@@ -114,13 +114,25 @@ object TSDFVoxelTSDFVoxelCollider : Collider<TSDFVoxelShape, TSDFVoxelShape> {
                         normalInGlobalCoordinates
                     )
 
-                    val relativeVelocity = computeRelativeVelocity(
-                        normalInGlobalCoordinates, body0CollisionPointInBody0Coordinates,
-                        body1CollisionPointInBody1Coordinates, body0Velocity, body0AngularVelocity, body1Velocity,
-                        body1AngularVelocity, dt
-                    )
+                    val relativeVelocity = computeRelativeVelocityBetweenCollisionPointsAlongNormal(
+                        normalInGlobalCoordinates,
+                        body0CollisionPointInBody0Coordinates,
+                        body1CollisionPointInBody1Coordinates,
+                        body0Transform,
+                        body0Velocity,
+                        body0AngularVelocity,
+                        body1Transform,
+                        body1Velocity,
+                        body1AngularVelocity
+                    ) * dt
 
-                    if (distanceToClosestSurfacePoint + relativeVelocity - speculativeThreshold < pointSphereRadius) {
+                    // Since we are in body1 voxel space, scale the speculative contract and relative velocity to go
+                    // from world coordinates to body1 voxel coordinates
+                    val speculativeContactsThresholdAndRelativeVelocity =
+                        (relativeVelocity - speculativeThreshold) / body1Shape.scalingFactor
+
+                    // This check uses distances relative to body1 size
+                    if (distanceToClosestSurfacePoint + speculativeContactsThresholdAndRelativeVelocity < pointSphereRadius) {
                         collisionPairs.add(collisionPair)
                     }
                 }

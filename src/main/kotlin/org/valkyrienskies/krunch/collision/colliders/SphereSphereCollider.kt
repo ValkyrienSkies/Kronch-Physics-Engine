@@ -6,7 +6,7 @@ import org.valkyrienskies.krunch.Pose
 import org.valkyrienskies.krunch.collision.CollisionPair
 import org.valkyrienskies.krunch.collision.CollisionResult
 import org.valkyrienskies.krunch.collision.shapes.SphereShape
-import org.valkyrienskies.krunch.computeRelativeVelocity
+import org.valkyrienskies.krunch.computeRelativeVelocityBetweenCollisionPointsAlongNormal
 import kotlin.math.sqrt
 
 object SphereSphereCollider : Collider<SphereShape, SphereShape> {
@@ -31,10 +31,17 @@ object SphereSphereCollider : Collider<SphereShape, SphereShape> {
             val body1DeepestPoint =
                 body1Transform.invTransform(Vector3d(body1Transform.p).fma(-body1Shape.radius, normal))
 
-            val relativeVelocity = computeRelativeVelocity(
-                normal, body0DeepestPoint, body1DeepestPoint, body0Velocity, body0AngularVelocity, body1Velocity,
-                body1AngularVelocity, dt
-            )
+            val relativeVelocity = computeRelativeVelocityBetweenCollisionPointsAlongNormal(
+                normal,
+                body0DeepestPoint,
+                body1DeepestPoint,
+                body0Transform,
+                body0Velocity,
+                body0AngularVelocity,
+                body1Transform,
+                body1Velocity,
+                body1AngularVelocity
+            ) * dt
 
             if ((body0Shape.radius + body1Shape.radius) > sqrt(
                     differenceLengthSq
