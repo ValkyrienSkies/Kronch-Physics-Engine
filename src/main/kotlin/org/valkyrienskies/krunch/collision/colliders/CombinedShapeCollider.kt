@@ -1,17 +1,26 @@
 package org.valkyrienskies.krunch.collision.colliders
 
-import org.joml.Vector3d
 import org.joml.Vector3dc
 import org.valkyrienskies.krunch.Pose
-import org.valkyrienskies.krunch.collision.CollisionPair
 import org.valkyrienskies.krunch.collision.CollisionResult
 import org.valkyrienskies.krunch.collision.shapes.CollisionShape
 import org.valkyrienskies.krunch.collision.shapes.CombinedShape
 
 object CombinedShapeCollider : Collider<CombinedShape, CollisionShape> {
     override fun computeCollisionBetweenShapes(
-        body0Shape: CombinedShape, body0Transform: Pose, body1Shape: CollisionShape, body1Transform: Pose
+        body0Shape: CombinedShape,
+        body0Transform: Pose,
+        body0Velocity: Vector3dc,
+        body0AngularVelocity: Vector3dc,
+        body1Shape: CollisionShape,
+        body1Transform: Pose,
+        body1Velocity: Vector3dc,
+        body1AngularVelocity: Vector3dc,
+        dt: Double,
+        speculativeThreshold: Double
     ): CollisionResult? {
+        return null
+        /*
         var minDepth = Double.MAX_VALUE
         var minCollisionPair: CollisionPair? = null
         for (pair in body0Shape.collisionShapes) {
@@ -47,5 +56,7 @@ object CombinedShapeCollider : Collider<CombinedShape, CollisionShape> {
         } else {
             CollisionResult(listOf(minCollisionPair!!))
         }
+
+         */
     }
 }

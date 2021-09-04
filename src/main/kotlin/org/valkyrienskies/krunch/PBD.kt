@@ -544,20 +544,8 @@ fun simulate(bodies: List<Body>, joints: List<Joint>, timeStep: Double, numSubst
 private fun applySubStepToCollisions(collisions: List<CollisionData>) {
     collisions.forEach { collisionData ->
         collisionData.collisionResult.collisionPoints.forEach { collisionContact ->
-            val displacement =
-                collisionData.body0.pose.transform(Vector3d(collisionContact.positionInFirstBody))
-                    .sub(collisionData.body1.pose.transform(Vector3d(collisionContact.positionInSecondBody)))
-
-            // I'm not sure if this the ideal way to do it
-            if (displacement.lengthSquared() > 1e-24 &&
-                displacement.dot(collisionContact.originalCollisionNormal) > 0
-            ) {
-                collisionContact.skipThisSubStep = false
-                collisionContact.normalThisSubStep = displacement.normalize()
-            } else {
-                collisionContact.skipThisSubStep = true
-                collisionContact.normalThisSubStep = Vector3d()
-            }
+            collisionContact.skipThisSubStep = false
+            collisionContact.normalThisSubStep = Vector3d(collisionContact.originalCollisionNormal)
             collisionContact.usedThisSubStep = false
             collisionContact.normalLambdaThisSubStep = 0.0
             collisionContact.tangentialLambdaThisSubStep = 0.0
@@ -767,12 +755,10 @@ private fun generateCollisionConstraints(bodies: List<Body>, dt: Double): List<C
                 continue // Both bodies are static, don't bother to collide with both of them
             }
 
-            val body0UpdatedPose = body0.pose.clone().integrate(body0.vel, body0.omega, dt)
-            val body1UpdatedPose = body1.pose.clone().integrate(body1.vel, body1.omega, dt)
-
             val collisionResult =
                 ColliderResolver.computeCollisionBetweenShapes(
-                    body0.shape, body0UpdatedPose, body1.shape, body1UpdatedPose
+                    body0.shape, body0.pose, body0.vel, body0.omega, body1.shape, body1.pose, body1.vel, body1.omega,
+                    dt, 0.05
                 )
 
             if (collisionResult != null && collisionResult.collisionPoints.isNotEmpty()) {
@@ -781,4 +767,26 @@ private fun generateCollisionConstraints(bodies: List<Body>, dt: Double): List<C
         }
     }
     return collisionDataList
+}
+
+fun getVelocityAt(
+    localPos: Vector3dc, velocity: Vector3dc, angularVelocity: Vector3dc, dest: Vector3d = Vector3d()
+): Vector3dc {
+    dest.set(angularVelocity)
+    dest.cross(localPos)
+    dest.add(velocity)
+    return dest
+}
+
+fun computeRelativeVelocity(
+    normal: Vector3dc, body0DeepestPoint: Vector3dc, body1DeepestPoint: Vector3dc, body0Velocity: Vector3dc,
+    body0AngularVelocity: Vector3dc, body1Velocity: Vector3dc, body1AngularVelocity: Vector3dc, dt: Double
+): Double {
+    val body0VelocityAlongNormal = getVelocityAt(body0DeepestPoint, body0Velocity, body0AngularVelocity)
+    val body1VelocityAlongNormal = getVelocityAt(body1DeepestPoint, body1Velocity, body1AngularVelocity)
+    // Add this to difference to get the future distance between contacts
+    // CurrentDistance + relativeVelocity
+    // If relativeVelocity < 0 then they get closer
+    // If relativeVelocity > 0 then they get further
+    return min((normal.dot(body1VelocityAlongNormal) - normal.dot(body0VelocityAlongNormal)) * dt, 0.0)
 }
