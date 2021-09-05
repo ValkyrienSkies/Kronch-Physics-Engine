@@ -59,7 +59,6 @@ class Joint(
             q.premul(globalPose1.q)
             val omega = Vector3d()
             omega.set(2.0 * q.x, 2.0 * q.y, 2.0 * q.z)
-            // todo: wtf
             // if (omega.w < 0.0)
             //     omega.mul(-1.0)
             applyBodyPairCorrection(body0, body1, omega, this.compliance, dt)
@@ -68,19 +67,19 @@ class Joint(
         if (this.type == HINGE) {
 
             // align axes
-            val a0 = getQuatAxis0(this.globalPose0.q)
-            val b0 = getQuatAxis1(this.globalPose0.q)
-            val c0 = getQuatAxis2(this.globalPose0.q)
-            val a1 = getQuatAxis0(this.globalPose1.q)
+            val a0 = getQuaternionAxis0(this.globalPose0.q)
+            // val b0 = getQuaternionAxis1(this.globalPose0.q)
+            // val c0 = getQuaternionAxis2(this.globalPose0.q)
+            val a1 = getQuaternionAxis0(this.globalPose1.q)
             a0.cross(a1)
             applyBodyPairCorrection(this.body0, this.body1, a0, 0.0, dt)
 
             // limits
             if (this.hasSwingLimits) {
                 this.updateGlobalPoses()
-                val n = getQuatAxis0(this.globalPose0.q)
-                val b0 = getQuatAxis1(this.globalPose0.q)
-                val b1 = getQuatAxis1(this.globalPose1.q)
+                val n = getQuaternionAxis0(this.globalPose0.q)
+                val b0 = getQuaternionAxis1(this.globalPose0.q)
+                val b1 = getQuaternionAxis1(this.globalPose1.q)
                 limitAngle(
                     this.body0, this.body1, n, b0, b1,
                     this.minSwingAngle, this.maxSwingAngle, this.swingLimitsCompliance, dt
@@ -93,8 +92,8 @@ class Joint(
             // swing limits
             if (this.hasSwingLimits) {
                 this.updateGlobalPoses()
-                val a0 = getQuatAxis0(this.globalPose0.q)
-                val a1 = getQuatAxis0(this.globalPose1.q)
+                val a0 = getQuaternionAxis0(this.globalPose0.q)
+                val a1 = getQuaternionAxis0(this.globalPose1.q)
                 val n = a0.cross(a1, Vector3d())
                 n.normalize()
                 limitAngle(
@@ -105,17 +104,17 @@ class Joint(
             // twist limits
             if (this.hasTwistLimits) {
                 this.updateGlobalPoses()
-                val n0 = getQuatAxis0(this.globalPose0.q)
-                val n1 = getQuatAxis0(this.globalPose1.q)
+                val n0 = getQuaternionAxis0(this.globalPose0.q)
+                val n1 = getQuaternionAxis0(this.globalPose1.q)
                 val n = n0.add(n1, Vector3d())
                 n.normalize()
 
-                val a0 = getQuatAxis1(this.globalPose0.q)
+                val a0 = getQuaternionAxis1(this.globalPose0.q)
                 val scale0 = -n.dot(a0)
                 a0.add(n.x * scale0, n.y * scale0, n.z * scale0)
                 a0.normalize()
 
-                val a1 = getQuatAxis1(this.globalPose1.q)
+                val a1 = getQuaternionAxis1(this.globalPose1.q)
                 val scale1 = -n.dot(a1)
 
                 a1.add(n.x * scale1, n.y * scale1, n.z * scale1)

@@ -11,24 +11,6 @@ import kotlin.math.min
 
 // pretty much one-for-one port of https://github.com/matthias-research/pages/blob/master/challenges/PBD.js
 
-fun getQuatAxis0(q: Quaterniond): Vector3d {
-    val x2 = q.x * 2.0
-    val w2 = q.w * 2.0
-    return Vector3d((q.w * w2) - 1.0 + q.x * x2, (q.z * w2) + q.y * x2, (-q.y * w2) + q.z * x2)
-}
-
-fun getQuatAxis1(q: Quaterniond): Vector3d {
-    val y2 = q.y * 2.0
-    val w2 = q.w * 2.0
-    return Vector3d((-q.z * w2) + q.x * y2, (q.w * w2) - 1.0 + q.y * y2, (q.x * w2) + q.z * y2)
-}
-
-fun getQuatAxis2(q: Quaterniond): Vector3d {
-    val z2 = q.z * 2.0
-    val w2 = q.w * 2.0
-    return Vector3d((q.y * w2) + q.x * z2, (-q.x * w2) + q.y * z2, (q.w * w2) - 1.0 + q.z * z2)
-}
-
 const val maxRotationPerSubstep = 0.5
 
 private const val PAIR_CORRECTION_MIN_LENGTH = 1e-10

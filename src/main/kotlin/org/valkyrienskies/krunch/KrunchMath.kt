@@ -1,5 +1,6 @@
 package org.valkyrienskies.krunch
 
+import org.joml.Quaterniondc
 import org.joml.Vector3d
 import org.joml.Vector3dc
 import kotlin.math.min
@@ -48,4 +49,22 @@ fun computeRelativeVelocityBetweenCollisionPointsAlongNormal(
     // If relativeVelocity < 0 then they get closer
     // If relativeVelocity > 0 then they get further
     return min((normal.dot(body1VelocityAlongNormal) - normal.dot(body0VelocityAlongNormal)), 0.0)
+}
+
+fun getQuaternionAxis0(q: Quaterniondc): Vector3d {
+    val x2 = q.x() * 2.0
+    val w2 = q.w() * 2.0
+    return Vector3d((q.w() * w2) - 1.0 + q.x() * x2, (q.z() * w2) + q.y() * x2, (-q.y() * w2) + q.z() * x2)
+}
+
+fun getQuaternionAxis1(q: Quaterniondc): Vector3d {
+    val y2 = q.y() * 2.0
+    val w2 = q.w() * 2.0
+    return Vector3d((-q.z() * w2) + q.x() * y2, (q.w() * w2) - 1.0 + q.y() * y2, (q.x() * w2) + q.z() * y2)
+}
+
+fun getQuaternionAxis2(q: Quaterniondc): Vector3d {
+    val z2 = q.z() * 2.0
+    val w2 = q.w() * 2.0
+    return Vector3d((q.y() * w2) + q.x() * z2, (-q.x() * w2) + q.y() * z2, (q.w() * w2) - 1.0 + q.z() * z2)
 }
