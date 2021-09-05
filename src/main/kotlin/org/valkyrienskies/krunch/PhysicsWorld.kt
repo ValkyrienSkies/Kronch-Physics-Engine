@@ -6,7 +6,7 @@ open class PhysicsWorld {
     val bodies: MutableList<Body> = ArrayList()
     val joints: MutableList<Joint> = ArrayList()
 
-    val settings = KrunchPhysicsWorldSettings()
+    var settings = KrunchPhysicsWorldSettings()
 
     open fun simulate(gravity: Vector3dc, timeStep: Double) {
         simulate(bodies, joints, gravity, timeStep, settings)
