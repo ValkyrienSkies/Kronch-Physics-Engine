@@ -4,7 +4,6 @@ import org.joml.Quaterniond
 import org.joml.Vector3d
 import org.joml.Vector3dc
 import org.valkyrienskies.krunch.collision.CollisionResult
-import org.valkyrienskies.krunch.collision.KrunchPhysicsWorldSettingsc
 import org.valkyrienskies.krunch.collision.colliders.ColliderResolver
 import kotlin.math.abs
 import kotlin.math.asin

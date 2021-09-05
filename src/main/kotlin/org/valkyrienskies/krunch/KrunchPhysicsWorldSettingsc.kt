@@ -1,4 +1,4 @@
-package org.valkyrienskies.krunch.collision
+package org.valkyrienskies.krunch
 
 /**
  * An immutable view of [KrunchPhysicsWorldSettings]

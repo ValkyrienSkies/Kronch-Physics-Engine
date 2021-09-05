@@ -1,7 +1,6 @@
 package org.valkyrienskies.krunch
 
 import org.joml.Vector3dc
-import org.valkyrienskies.krunch.collision.KrunchPhysicsWorldSettings
 
 open class PhysicsWorld {
     val bodies: MutableList<Body> = ArrayList()

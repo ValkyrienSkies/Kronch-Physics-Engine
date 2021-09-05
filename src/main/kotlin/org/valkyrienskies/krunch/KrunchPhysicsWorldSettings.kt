@@ -1,4 +1,4 @@
-package org.valkyrienskies.krunch.collision
+package org.valkyrienskies.krunch
 
 class KrunchPhysicsWorldSettings(
     override var subSteps: Int = 20,
