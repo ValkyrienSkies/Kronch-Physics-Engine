@@ -4,6 +4,7 @@ import org.joml.Quaterniond
 import org.joml.Vector3d
 import org.joml.Vector3dc
 import org.valkyrienskies.krunch.collision.CollisionResult
+import org.valkyrienskies.krunch.collision.KrunchPhysicsWorldSettingsc
 import org.valkyrienskies.krunch.collision.colliders.ColliderResolver
 import kotlin.math.abs
 import kotlin.math.asin
@@ -91,13 +92,19 @@ fun limitAngle(
     }
 }
 
-fun simulate(bodies: List<Body>, joints: List<Joint>, timeStep: Double, numSubsteps: Int, gravity: Vector3dc) {
-    val dt = timeStep / numSubsteps
+fun simulate(
+    bodies: List<Body>,
+    joints: List<Joint>,
+    gravity: Vector3dc,
+    timeStep: Double,
+    settings: KrunchPhysicsWorldSettingsc
+) {
+    val dt = timeStep / settings.subSteps
 
     // Only solve collision detection once per time step
-    val collisions = generateCollisionConstraints(bodies, timeStep)
+    val collisions = generateCollisionConstraints(bodies, timeStep, speculativeContactDistance = 0.05)
 
-    for (step in 0 until numSubsteps) {
+    for (step in 0 until settings.subSteps) {
         // Step 1, integrate velocity into position
         for (body in bodies)
             if (!body.isStatic) body.integrate(dt, gravity)
@@ -108,7 +115,7 @@ fun simulate(bodies: List<Body>, joints: List<Joint>, timeStep: Double, numSubst
 
         // Collide shapes with each other
         applySubStepToCollisions(collisions)
-        resolveCollisions(collisions, dt)
+        resolveCollisions(collisions, dt, settings.collisionCompliance)
 
         // Step 3, compute new velocities given the positional updates
         for (body in bodies)
@@ -126,10 +133,12 @@ fun simulate(bodies: List<Body>, joints: List<Joint>, timeStep: Double, numSubst
          *
          * Maybe I should use the Jacobian solver to solve these equations?
          */
-        for (i in 1..3) correctRestitution(collisions, dt)
+        for (i in 1..settings.restitutionCorrectionIterations) correctRestitution(
+            collisions, dt, settings.collisionRestitutionCompliance
+        )
 
         // Only run this once
-        applyDynamicFriction(collisions, dt)
+        applyDynamicFriction(collisions, dt, settings.dynamicFrictionCompliance)
 
         // Step 4, solve velocity constraints
         for (joint in joints)
@@ -149,7 +158,7 @@ private fun applySubStepToCollisions(collisions: List<CollisionData>) {
     }
 }
 
-private fun correctRestitution(collisions: List<CollisionData>, dt: Double, restitutionCompliance: Double = 0.0) {
+private fun correctRestitution(collisions: List<CollisionData>, dt: Double, compliance: Double = 0.0) {
     collisions.forEach { collision ->
         with(collision) {
             collisionResult.collisionPoints.forEach { collisionContact ->
@@ -192,7 +201,7 @@ private fun correctRestitution(collisions: List<CollisionData>, dt: Double, rest
                         )
 
                         applyBodyPairCorrection(
-                            body0, body1, deltaVelocity, restitutionCompliance, dt, body0CollisionPosInGlobal,
+                            body0, body1, deltaVelocity, compliance, dt, body0CollisionPosInGlobal,
                             body1CollisionPosInGlobal,
                             true
                         )
@@ -203,7 +212,7 @@ private fun correctRestitution(collisions: List<CollisionData>, dt: Double, rest
     }
 }
 
-private fun applyDynamicFriction(collisions: List<CollisionData>, dt: Double, restitutionCompliance: Double = 0.0) {
+private fun applyDynamicFriction(collisions: List<CollisionData>, dt: Double, compliance: Double = 0.0) {
     collisions.forEach { collision ->
         with(collision) {
             collisionResult.collisionPoints.forEach { collisionContact ->
@@ -247,7 +256,7 @@ private fun applyDynamicFriction(collisions: List<CollisionData>, dt: Double, re
                             )
 
                         applyBodyPairCorrection(
-                            body0, body1, friction, restitutionCompliance, dt, body0CollisionPosInGlobal,
+                            body0, body1, friction, compliance, dt, body0CollisionPosInGlobal,
                             body1CollisionPosInGlobal,
                             true
                         )
@@ -258,7 +267,7 @@ private fun applyDynamicFriction(collisions: List<CollisionData>, dt: Double, re
     }
 }
 
-private fun resolveCollisions(collisions: List<CollisionData>, dt: Double, collisionCompliance: Double = 0.0) {
+private fun resolveCollisions(collisions: List<CollisionData>, dt: Double, compliance: Double = 0.0) {
     collisions.forEach { collision ->
         with(collision) {
             collisionResult.collisionPoints.forEach { collisionContact ->
@@ -287,7 +296,7 @@ private fun resolveCollisions(collisions: List<CollisionData>, dt: Double, colli
 
                     // Compliance is set to [collisionCompliance] to dampen collision forces.
                     normalLambdaThisSubStep = applyBodyPairCorrection(
-                        body0, body1, corr, collisionCompliance, dt,
+                        body0, body1, corr, compliance, dt,
                         body0PointPosInGlobal, body1PointPosInGlobal, false, normalLambdaThisSubStep
                     )
 
@@ -315,7 +324,7 @@ private fun resolveCollisions(collisions: List<CollisionData>, dt: Double, colli
                         body0 = body0,
                         body1 = body1,
                         corr = tangentialRelativeMotionOfContactPoints,
-                        compliance = collisionCompliance,
+                        compliance = compliance,
                         dt = dt,
                         pos0 = body0PointPosInGlobal,
                         pos1 = body1PointPosInGlobal,
@@ -333,7 +342,9 @@ private fun resolveCollisions(collisions: List<CollisionData>, dt: Double, colli
 
 private data class CollisionData(val body0: Body, val body1: Body, val collisionResult: CollisionResult)
 
-private fun generateCollisionConstraints(bodies: List<Body>, dt: Double): List<CollisionData> {
+private fun generateCollisionConstraints(
+    bodies: List<Body>, dt: Double, speculativeContactDistance: Double = 0.05
+): List<CollisionData> {
     val collisionDataList = ArrayList<CollisionData>()
     for (i in bodies.indices) {
         for (j in i + 1 until bodies.size) {
@@ -354,7 +365,7 @@ private fun generateCollisionConstraints(bodies: List<Body>, dt: Double): List<C
             val collisionResult =
                 ColliderResolver.computeCollisionBetweenShapes(
                     body0.shape, body0.pose, body0.vel, body0.omega, body1.shape, body1.pose, body1.vel, body1.omega,
-                    dt, 0.05
+                    dt, speculativeContactDistance
                 )
 
             if (collisionResult != null && collisionResult.collisionPoints.isNotEmpty()) {

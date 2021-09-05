@@ -30,8 +30,7 @@ class OpenGLWindow(
     private val physicsWorld: PhysicsWorld,
     private val cameraEyePos: Vector3fc = Vector3f(0.0f, 4.0f, 10.0f),
     private val cameraLookAtPos: Vector3fc = Vector3f(0.0f, 0.0f, 0.0f),
-    private val gravity: Vector3dc = Vector3d(0.0, -10.0, 0.0),
-    private val numSubSteps: Int = 40
+    private val gravity: Vector3dc = Vector3d(0.0, -10.0, 0.0)
 ) {
     var errorCallback: GLFWErrorCallback? = null
     var keyCallback: GLFWKeyCallback? = null
@@ -201,9 +200,9 @@ class OpenGLWindow(
             val diff = (thisTime - lastTime) / 1E9f
 
             // Run physics
-            physicsWorld.simulate(gravity, numSubSteps, 1.0 / 60.0)
+            physicsWorld.simulate(gravity, 1.0 / 60.0)
 
-            Thread.sleep(1000 / 60)
+            Thread.sleep((1000 / 60).toLong())
             // Compute some rotation angle.
 
             // Make the viewport always fill the whole window.

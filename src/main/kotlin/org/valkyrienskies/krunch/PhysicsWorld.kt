@@ -1,12 +1,15 @@
 package org.valkyrienskies.krunch
 
 import org.joml.Vector3dc
+import org.valkyrienskies.krunch.collision.KrunchPhysicsWorldSettings
 
 open class PhysicsWorld {
     val bodies: MutableList<Body> = ArrayList()
     val joints: MutableList<Joint> = ArrayList()
 
-    open fun simulate(gravity: Vector3dc, numSubSteps: Int, timeStep: Double) {
-        simulate(bodies, joints, timeStep, numSubSteps, gravity)
+    val settings = KrunchPhysicsWorldSettings()
+
+    open fun simulate(gravity: Vector3dc, timeStep: Double) {
+        simulate(bodies, joints, gravity, timeStep, settings)
     }
 }
