@@ -132,7 +132,9 @@ object TSDFVoxelTSDFVoxelCollider : Collider<TSDFVoxelShape, TSDFVoxelShape> {
                         (relativeVelocity - speculativeThreshold) / body1Shape.scalingFactor
 
                     // This check uses distances relative to body1 size
-                    if (distanceToClosestSurfacePoint + speculativeContactsThresholdAndRelativeVelocity < pointSphereRadius) {
+                    if (distanceToClosestSurfacePoint + speculativeContactsThresholdAndRelativeVelocity <
+                        pointSphereRadius
+                    ) {
                         collisionPairs.add(collisionPair)
                     }
                 }
