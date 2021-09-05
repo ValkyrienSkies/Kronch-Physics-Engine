@@ -9,6 +9,11 @@ import org.valkyrienskies.krunch.collision.shapes.SphereShape
 import org.valkyrienskies.krunch.collision.shapes.TSDFVoxelShape
 
 object ColliderResolver : Collider<CollisionShape, CollisionShape> {
+
+    /**
+     * Computes the [CollisionResult] between two [CollisionShape] by mapping the shape types to the correct [Collider],
+     * and then returning the result.
+     */
     override fun computeCollisionBetweenShapes(
         body0Shape: CollisionShape,
         body0Transform: Posec,
@@ -21,66 +26,26 @@ object ColliderResolver : Collider<CollisionShape, CollisionShape> {
         dt: Double,
         speculativeThreshold: Double
     ): CollisionResult? {
-        return when {
-            (body0Shape is SphereShape) && (body1Shape is SphereShape) -> {
-                SphereSphereCollider.computeCollisionBetweenShapes(
-                    body0Shape,
-                    body0Transform,
-                    body0Velocity,
-                    body0AngularVelocity,
-                    body1Shape,
-                    body1Transform,
-                    body1Velocity,
-                    body1AngularVelocity,
-                    dt,
-                    speculativeThreshold
-                )
-            }
-            (body0Shape is SphereShape) && (body1Shape is TSDFVoxelShape) -> {
-                SphereTSDFVoxelCollider.computeCollisionBetweenShapes(
-                    body0Shape,
-                    body0Transform,
-                    body0Velocity,
-                    body0AngularVelocity,
-                    body1Shape,
-                    body1Transform,
-                    body1Velocity,
-                    body1AngularVelocity,
-                    dt,
-                    speculativeThreshold
-                )
-            }
-            (body0Shape is SphereShape) && (body1Shape is BoxShape) -> {
-                SphereBoxCollider.computeCollisionBetweenShapes(
-                    body0Shape,
-                    body0Transform,
-                    body0Velocity,
-                    body0AngularVelocity,
-                    body1Shape,
-                    body1Transform,
-                    body1Velocity,
-                    body1AngularVelocity,
-                    dt,
-                    speculativeThreshold
-                )
-            }
-            (body0Shape is TSDFVoxelShape) && (body1Shape is TSDFVoxelShape) -> {
-                TSDFVoxelTSDFVoxelCollider.computeCollisionBetweenShapes(
-                    body0Shape,
-                    body0Transform,
-                    body0Velocity,
-                    body0AngularVelocity,
-                    body1Shape,
-                    body1Transform,
-                    body1Velocity,
-                    body1AngularVelocity,
-                    dt,
-                    speculativeThreshold
-                )
-            }
-            else -> {
-                null
-            }
+        // Get the right collider for these two shape types
+        val collider: Collider<*, *>? = when {
+            (body0Shape is SphereShape) && (body1Shape is SphereShape) -> SphereSphereCollider
+            (body0Shape is SphereShape) && (body1Shape is TSDFVoxelShape) -> SphereTSDFVoxelCollider
+            (body0Shape is SphereShape) && (body1Shape is BoxShape) -> SphereBoxCollider
+            (body0Shape is TSDFVoxelShape) && (body1Shape is TSDFVoxelShape) -> TSDFVoxelTSDFVoxelCollider
+            else -> null
         }
+
+        return collider?.computeCollisionBetweenShapesGeneric(
+            body0Shape,
+            body0Transform,
+            body0Velocity,
+            body0AngularVelocity,
+            body1Shape,
+            body1Transform,
+            body1Velocity,
+            body1AngularVelocity,
+            dt,
+            speculativeThreshold
+        )
     }
 }
