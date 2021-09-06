@@ -154,7 +154,7 @@ class Body(_pose: Pose) {
      * Returns the impulse that when added to velocity will apply this correction within one time-step.
      */
     inline fun getPositionCorrectionImpulses(
-        corr: Vector3dc, pos: Vector3dc? = null, dt: Double,
+        corr: Vector3dc, pos: Vector3dc? = null,
         function: (linearImpulse: Vector3dc?, angularImpulse: Vector3dc?) -> Unit
     ) {
         var linearImpulse: Vector3dc? = null
@@ -166,7 +166,7 @@ class Body(_pose: Pose) {
         else {
             // this.pose.p.add(corr.x() * this.invMass, corr.y() * this.invMass, corr.z() * this.invMass)
             linearImpulse =
-                Vector3d(corr.x() * this.invMass / dt, corr.y() * this.invMass / dt, corr.z() * this.invMass / dt)
+                Vector3d(corr.x() * this.invMass, corr.y() * this.invMass, corr.z() * this.invMass)
             pos.sub(this.pose.p, dq)
             dq.cross(corr)
         }
@@ -176,8 +176,6 @@ class Body(_pose: Pose) {
             this.invInertia.y * dq.y, this.invInertia.z * dq.z
         )
         this.pose.rotate(dq)
-
-        dq.mul(1.0 / dt)
 
         angularImpulse = dq
 

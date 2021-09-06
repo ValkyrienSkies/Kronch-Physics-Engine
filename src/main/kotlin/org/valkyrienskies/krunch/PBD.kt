@@ -3,6 +3,8 @@ package org.valkyrienskies.krunch
 import org.joml.Quaterniond
 import org.joml.Vector3d
 import org.joml.Vector3dc
+import org.valkyrienskies.krunch.SolverType.GAUSS_SEIDEL
+import org.valkyrienskies.krunch.SolverType.JACOBI
 import org.valkyrienskies.krunch.collision.CollisionResult
 import org.valkyrienskies.krunch.collision.colliders.ColliderResolver
 import kotlin.math.abs
@@ -15,7 +17,7 @@ const val maxRotationPerSubstep = 0.5
 
 internal const val PAIR_CORRECTION_MIN_LENGTH = 1e-10
 
-fun applyBodyPairCorrectionLambdaOnly(
+fun applyBodyPairCorrectionDeltaLambdaOnly(
     body0: Body?, body1: Body?, corr: Vector3dc, compliance: Double,
     dt: Double, pos0: Vector3dc? = null, pos1: Vector3dc? = null, velocityLevel: Boolean = false,
     prevLambda: Double = 0.0, maxLambda: Double = Double.MAX_VALUE
@@ -32,16 +34,16 @@ fun applyBodyPairCorrectionLambdaOnly(
 
     val w = w0 + w1
     if (w == 0.0)
-        return prevLambda
+        return 0.0
 
     val deltaLambda = (-C - prevLambda * compliance) / (w + (compliance / (dt * dt)))
 
     if (abs(deltaLambda) > maxLambda) {
         // This part is only used for static friction (limit the strength of static friction)
-        return prevLambda
+        return 0.0
     }
 
-    return prevLambda + deltaLambda
+    return deltaLambda
 }
 
 /**
@@ -161,22 +163,56 @@ fun simulate(
         for (joint in joints)
             joint.solvePos(dt)
 
-        // Collide shapes with each other
         collisionConstraints.forEach {
             it.reset()
-            it.iterate(dt)
+        }
+        // Collide shapes with each other
+        for (i in 1..settings.iterations) {
+            collisionConstraints.forEach {
+                it.iterate(dt)
 
-            it.computeUpdateImpulses(
-                dt
-            ) { body0, body0LinearImpulse, body0AngularImpulse, body1, body1LinearImpulse, body1AngularImpulse ->
-                // For now, update immediately
-                if (!body0.isStatic) {
-                    if (body0LinearImpulse != null) body0.pose.p.fma(dt, body0LinearImpulse)
-                    if (body0AngularImpulse != null) body0.applyRotation(body0AngularImpulse, dt)
+                if (settings.solverType == GAUSS_SEIDEL) {
+                    // Update immediately
+                    it.computeUpdateImpulses { body0, body0LinearImpulse, body0AngularImpulse, body1, body1LinearImpulse, body1AngularImpulse ->
+                        // For now, update immediately
+                        if (!body0.isStatic) {
+                            if (body0LinearImpulse != null) body0.pose.p.add(body0LinearImpulse)
+                            if (body0AngularImpulse != null) body0.applyRotation(body0AngularImpulse)
+                        }
+                        if (!body1.isStatic) {
+                            if (body1LinearImpulse != null) body1.pose.p.add(body1LinearImpulse)
+                            if (body1AngularImpulse != null) body1.applyRotation(body1AngularImpulse)
+                        }
+                    }
                 }
-                if (!body1.isStatic) {
-                    if (body1LinearImpulse != null) body1.pose.p.fma(dt, body1LinearImpulse)
-                    if (body1AngularImpulse != null) body1.applyRotation(body1AngularImpulse, dt)
+            }
+            if (settings.solverType == JACOBI) {
+                val linearImpulsesToAddMap = HashMap<Body, Vector3d>()
+                val angularImpulsesToAddMap = HashMap<Body, Vector3d>()
+                collisionConstraints.forEach {
+                    it.computeUpdateImpulses { body0, body0LinearImpulse, body0AngularImpulse, body1, body1LinearImpulse, body1AngularImpulse ->
+                        // For now, update immediately
+                        if (!body0.isStatic) {
+                            if (body0LinearImpulse != null)
+                                linearImpulsesToAddMap.getOrPut(body0) { Vector3d() }.add(body0LinearImpulse)
+                            if (body0AngularImpulse != null)
+                                angularImpulsesToAddMap.getOrPut(body0) { Vector3d() }.add(body0AngularImpulse)
+                        }
+                        if (!body1.isStatic) {
+                            if (body1LinearImpulse != null)
+                                linearImpulsesToAddMap.getOrPut(body1) { Vector3d() }.add(body1LinearImpulse)
+                            if (body1AngularImpulse != null)
+                                angularImpulsesToAddMap.getOrPut(body1) { Vector3d() }.add(body1AngularImpulse)
+                        }
+                    }
+                }
+
+                linearImpulsesToAddMap.forEach { (body, linearImpulse) ->
+                    body.pose.p.add(linearImpulse)
+                }
+
+                angularImpulsesToAddMap.forEach { (body, angularImpulse) ->
+                    body.applyRotation(angularImpulse)
                 }
             }
         }

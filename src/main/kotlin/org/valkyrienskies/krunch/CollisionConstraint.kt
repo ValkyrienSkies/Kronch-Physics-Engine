@@ -14,9 +14,9 @@ class CollisionConstraint(
 ) : TwoBodyConstraint {
 
     private var lambda: Double = 0.0
+    private var prevLambda: Double = 0.0
 
     internal inline fun computeUpdateImpulses(
-        dt: Double,
         function: (
             body0: Body, body0LinearImpulse: Vector3dc?, body0AngularImpulse: Vector3dc?,
             body1: Body, body1LinearImpulse: Vector3dc?, body1AngularImpulse: Vector3dc?
@@ -30,18 +30,21 @@ class CollisionConstraint(
         val body0PointPosInGlobal = body0.pose.transform(Vector3d(body0ContactPosInBody0Coordinates))
         val body1PointPosInGlobal = body1.pose.transform(Vector3d(body1ContactPosInBody1Coordinates))
 
-        if (abs(lambda) < 1e-12) return // Skip
+        // Use deltaLambda when computing the impulse, since prevLambda has already been added to the bodies.
+        val deltaLambda = lambda - prevLambda
 
-        val corr = contactNormalInGlobalCoordinates.mul(lambda, Vector3d())
+        if (abs(deltaLambda) < 1e-12) return // Skip
 
-        body0.getPositionCorrectionImpulses(corr, body0PointPosInGlobal, dt) { linearImpulse, angularImpulse ->
+        val corr = contactNormalInGlobalCoordinates.mul(deltaLambda, Vector3d())
+
+        body0.getPositionCorrectionImpulses(corr, body0PointPosInGlobal) { linearImpulse, angularImpulse ->
             body0LinearImpulse = linearImpulse
             body0AngularImpulse = angularImpulse
         }
 
         corr.mul(-1.0)
 
-        body1.getPositionCorrectionImpulses(corr, body1PointPosInGlobal, dt) { linearImpulse, angularImpulse ->
+        body1.getPositionCorrectionImpulses(corr, body1PointPosInGlobal) { linearImpulse, angularImpulse ->
             body1LinearImpulse = linearImpulse
             body1AngularImpulse = angularImpulse
         }
@@ -59,18 +62,20 @@ class CollisionConstraint(
 
         if (d < PAIR_CORRECTION_MIN_LENGTH) {
             // No longer colliding, skip this contact
-            // Technically any d value > 0 is valid, but don't allow values that are too small (< PAIR_CORRECTION_MIN_LENGTH) to avoid floating point errors
-            // throw IllegalStateException("This should be impossible!")
-            lambda = 0.0
+            // There should be no update to lambda, so set prevLambda = lambda
+            prevLambda = lambda
             return
         }
 
         // This part doesn't make sense to me now, but it fixes a lot of problems to make [corr] negative
         val corr = contactNormalInGlobalCoordinates.mul(-d, Vector3d())
 
-        lambda = applyBodyPairCorrectionLambdaOnly(
+        val deltaLambda = applyBodyPairCorrectionDeltaLambdaOnly(
             body0, body1, corr, collisionCompliance, dt, body0PointPosInGlobal, body1PointPosInGlobal, false, lambda
         )
+
+        prevLambda = lambda
+        lambda += deltaLambda
     }
 
     override fun reset() {
