@@ -41,8 +41,8 @@ class Body(_pose: Pose) {
         )
     }
 
-    fun applyRotation(rot: Vector3d, scale: Double = 1.0) {
-        var scale = scale
+    fun applyRotation(rot: Vector3dc, scale: Double = 1.0) {
+        var scaleConsideringMaxRotation = scale
         // safety clamping. This happens very rarely if the solver
         // wants to turn the body by more than 30 degrees in the
         // orders of milliseconds
@@ -50,10 +50,13 @@ class Body(_pose: Pose) {
         val maxPhi = 0.5
         val phi = rot.length()
 
-        if (phi * scale > maxRotationPerSubstep)
-            scale = maxRotationPerSubstep / phi
+        if (phi * scaleConsideringMaxRotation > maxRotationPerSubstep)
+            scaleConsideringMaxRotation = maxRotationPerSubstep / phi
 
-        val dq = Quaterniond(rot.x * scale, rot.y * scale, rot.z * scale, 0.0)
+        val dq = Quaterniond(
+            rot.x() * scaleConsideringMaxRotation, rot.y() * scaleConsideringMaxRotation,
+            rot.z() * scaleConsideringMaxRotation, 0.0
+        )
         dq.mul(this.pose.q)
         this.pose.q.set(
             this.pose.q.x + 0.5 * dq.x, this.pose.q.y + 0.5 * dq.y,
@@ -145,6 +148,42 @@ class Body(_pose: Pose) {
             this.omega.add(dq)
         else
             this.applyRotation(dq)
+    }
+
+    /**
+     * Returns the impulse that when added to velocity will apply this correction within one time-step.
+     */
+    inline fun getPositionCorrectionImpulses(
+        corr: Vector3dc, pos: Vector3dc? = null, dt: Double,
+        function: (linearImpulse: Vector3dc?, angularImpulse: Vector3dc?) -> Unit
+    ) {
+        var linearImpulse: Vector3dc? = null
+        var angularImpulse: Vector3dc? = null
+
+        val dq = Vector3d()
+        if (pos == null)
+            dq.set(corr)
+        else {
+            // this.pose.p.add(corr.x() * this.invMass, corr.y() * this.invMass, corr.z() * this.invMass)
+            linearImpulse =
+                Vector3d(corr.x() * this.invMass / dt, corr.y() * this.invMass / dt, corr.z() * this.invMass / dt)
+            pos.sub(this.pose.p, dq)
+            dq.cross(corr)
+        }
+        this.pose.invRotate(dq)
+        dq.set(
+            this.invInertia.x * dq.x,
+            this.invInertia.y * dq.y, this.invInertia.z * dq.z
+        )
+        this.pose.rotate(dq)
+
+        dq.mul(1.0 / dt)
+
+        angularImpulse = dq
+
+        // this.applyRotation(dq)
+
+        function(linearImpulse, angularImpulse)
     }
 
     companion object {

@@ -13,7 +13,36 @@ import kotlin.math.min
 
 const val maxRotationPerSubstep = 0.5
 
-private const val PAIR_CORRECTION_MIN_LENGTH = 1e-10
+internal const val PAIR_CORRECTION_MIN_LENGTH = 1e-10
+
+fun applyBodyPairCorrectionLambdaOnly(
+    body0: Body?, body1: Body?, corr: Vector3dc, compliance: Double,
+    dt: Double, pos0: Vector3dc? = null, pos1: Vector3dc? = null, velocityLevel: Boolean = false,
+    prevLambda: Double = 0.0, maxLambda: Double = Double.MAX_VALUE
+): Double {
+    val C = corr.length()
+    if (C == 0.0)
+        return prevLambda
+
+    val normal = Vector3d(corr)
+    normal.normalize()
+
+    val w0 = if (body0 != null && !body0.isStatic) body0.getInverseMass(normal, pos0) else 0.0
+    val w1 = if (body1 != null && !body1.isStatic) body1.getInverseMass(normal, pos1) else 0.0
+
+    val w = w0 + w1
+    if (w == 0.0)
+        return prevLambda
+
+    val deltaLambda = (-C - prevLambda * compliance) / (w + (compliance / (dt * dt)))
+
+    if (abs(deltaLambda) > maxLambda) {
+        // This part is only used for static friction (limit the strength of static friction)
+        return prevLambda
+    }
+
+    return prevLambda + deltaLambda
+}
 
 /**
  * Returns the lambda used in this correction computation
@@ -44,7 +73,9 @@ fun applyBodyPairCorrection(
         return prevLambda
     }
 
-    normal.mul(-deltaLambda)
+    val newLambda = prevLambda + deltaLambda
+
+    normal.mul(-newLambda)
 
     if (body0 != null && !body0.isStatic) {
         body0.applyCorrection(normal, pos0, velocityLevel)
@@ -54,7 +85,7 @@ fun applyBodyPairCorrection(
         normal.mul(-1.0)
         body1.applyCorrection(normal, pos1, velocityLevel)
     }
-    return prevLambda + deltaLambda
+    return newLambda
 }
 
 fun limitAngle(
@@ -91,6 +122,22 @@ fun limitAngle(
     }
 }
 
+private fun createCollisionConstraints(
+    collisionData: List<CollisionData>, settings: KrunchPhysicsWorldSettingsc
+): List<CollisionConstraint> {
+    val collisionConstraints = ArrayList<CollisionConstraint>()
+    collisionData.forEach { data ->
+        data.collisionResult.collisionPoints.forEach { collisionPair ->
+            val collisionConstraint = CollisionConstraint(
+                data.body0, collisionPair.positionInFirstBody, data.body1, collisionPair.positionInSecondBody,
+                collisionPair.originalCollisionNormal, settings.collisionCompliance
+            )
+            collisionConstraints.add(collisionConstraint)
+        }
+    }
+    return collisionConstraints
+}
+
 fun simulate(
     bodies: List<Body>,
     joints: List<Joint>,
@@ -102,6 +149,7 @@ fun simulate(
 
     // Only solve collision detection once per time step
     val collisions = generateCollisionConstraints(bodies, timeStep, speculativeContactDistance = 0.05)
+    val collisionConstraints = createCollisionConstraints(collisions, settings)
 
     for (step in 0 until settings.subSteps) {
         // Step 1, integrate velocity into position
@@ -109,12 +157,32 @@ fun simulate(
             if (!body.isStatic) body.integrate(dt, gravity)
 
         // Step 2, solve positional constraints (like joints and contacts)
+        // TODO: Enable joints
         for (joint in joints)
             joint.solvePos(dt)
 
         // Collide shapes with each other
-        applySubStepToCollisions(collisions)
-        resolveCollisions(collisions, dt, settings.collisionCompliance)
+        collisionConstraints.forEach {
+            it.reset()
+            it.iterate(dt)
+
+            it.computeUpdateImpulses(
+                dt
+            ) { body0, body0LinearImpulse, body0AngularImpulse, body1, body1LinearImpulse, body1AngularImpulse ->
+                // For now, update immediately
+                if (!body0.isStatic) {
+                    if (body0LinearImpulse != null) body0.pose.p.fma(dt, body0LinearImpulse)
+                    if (body0AngularImpulse != null) body0.applyRotation(body0AngularImpulse, dt)
+                }
+                if (!body1.isStatic) {
+                    if (body1LinearImpulse != null) body1.pose.p.fma(dt, body1LinearImpulse)
+                    if (body1AngularImpulse != null) body1.applyRotation(body1AngularImpulse, dt)
+                }
+            }
+        }
+
+        // applySubStepToCollisions(collisions)
+        // resolveCollisions(collisions, dt, settings.collisionCompliance)
 
         // Step 3, compute new velocities given the positional updates
         for (body in bodies)
@@ -132,12 +200,12 @@ fun simulate(
          *
          * Maybe I should use the Jacobian solver to solve these equations?
          */
-        for (i in 1..settings.restitutionCorrectionIterations) correctRestitution(
-            collisions, dt, settings.collisionRestitutionCompliance
-        )
+        // for (i in 1..settings.restitutionCorrectionIterations) correctRestitution(
+        //     collisions, dt, settings.collisionRestitutionCompliance
+        // )
 
         // Only run this once
-        applyDynamicFriction(collisions, dt, settings.dynamicFrictionCompliance)
+        // applyDynamicFriction(collisions, dt, settings.dynamicFrictionCompliance)
 
         // Step 4, solve velocity constraints
         for (joint in joints)
@@ -299,6 +367,7 @@ private fun resolveCollisions(collisions: List<CollisionData>, dt: Double, compl
                         body0PointPosInGlobal, body1PointPosInGlobal, false, normalLambdaThisSubStep
                     )
 
+                    /*
                     // Next, apply static friction
                     val staticFrictionCoefficient =
                         (body0.staticFrictionCoefficient + body1.staticFrictionCoefficient) / 2.0
@@ -333,6 +402,8 @@ private fun resolveCollisions(collisions: List<CollisionData>, dt: Double, compl
                     )
 
                     usedThisSubStep = true
+
+                     */
                 }
             }
         }
