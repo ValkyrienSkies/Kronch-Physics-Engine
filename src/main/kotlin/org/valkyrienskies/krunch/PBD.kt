@@ -173,7 +173,8 @@ fun simulate(
 
                 if (settings.solverType == GAUSS_SEIDEL) {
                     // Update immediately
-                    it.computeUpdateImpulses { body0, body0LinearImpulse, body0AngularImpulse, body1, body1LinearImpulse, body1AngularImpulse ->
+                    it.computeUpdateImpulses { body0, body0LinearImpulse, body0AngularImpulse,
+                        body1, body1LinearImpulse, body1AngularImpulse ->
                         // For now, update immediately
                         if (!body0.isStatic) {
                             if (body0LinearImpulse != null) body0.pose.p.add(body0LinearImpulse)
@@ -190,7 +191,8 @@ fun simulate(
                 val linearImpulsesToAddMap = HashMap<Body, Vector3d>()
                 val angularImpulsesToAddMap = HashMap<Body, Vector3d>()
                 collisionConstraints.forEach {
-                    it.computeUpdateImpulses { body0, body0LinearImpulse, body0AngularImpulse, body1, body1LinearImpulse, body1AngularImpulse ->
+                    it.computeUpdateImpulses { body0, body0LinearImpulse, body0AngularImpulse,
+                        body1, body1LinearImpulse, body1AngularImpulse ->
                         // For now, update immediately
                         if (!body0.isStatic) {
                             if (body0LinearImpulse != null)
