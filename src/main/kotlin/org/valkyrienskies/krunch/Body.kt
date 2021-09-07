@@ -151,9 +151,9 @@ class Body(_pose: Pose) {
     }
 
     /**
-     * Returns the impulse that when added to velocity will apply this correction within one time-step.
+     * Returns the impulse that will adjust the position/velocity for constraints.
      */
-    inline fun getPositionCorrectionImpulses(
+    inline fun getCorrectionImpulses(
         corr: Vector3dc, pos: Vector3dc? = null,
         function: (linearImpulse: Vector3dc?, angularImpulse: Vector3dc?) -> Unit
     ) {

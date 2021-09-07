@@ -51,12 +51,12 @@ class PhysicsWorldChainTest : PhysicsWorld() {
         firstBoxBody.setBox(boxSize)
         firstBoxBody.shape = singleVoxelShape
 
-        val secondBoxPose = Pose(Vector3d(1.0, 4.5, 0.0), Quaterniond())
+        val secondBoxPose = Pose(Vector3d(2.0, 4.5, 0.0), Quaterniond())
         val secondBoxBody = Body(secondBoxPose)
         secondBoxBody.setBox(boxSize)
         secondBoxBody.shape = biggerVoxelShape
 
-        val thirdBoxPose = Pose(Vector3d(3.0, 4.5, 0.0), Quaterniond())
+        val thirdBoxPose = Pose(Vector3d(5.0, 4.5, 0.0), Quaterniond())
         val thirdBoxBody = Body(thirdBoxPose)
         thirdBoxBody.setBox(boxSize)
         thirdBoxBody.shape = biggerVoxelShape

@@ -3,6 +3,7 @@ package org.valkyrienskies.krunch
 import org.joml.Vector3d
 import org.joml.Vector3dc
 import kotlin.math.abs
+import kotlin.math.min
 
 class CollisionConstraint(
     internal val body0: Body,
@@ -10,7 +11,7 @@ class CollisionConstraint(
     internal val body1: Body,
     internal val body1ContactPosInBody1Coordinates: Vector3dc,
     internal val contactNormalInGlobalCoordinates: Vector3dc,
-    internal val collisionCompliance: Double
+    private val collisionCompliance: Double
 ) : TwoBodyConstraint {
 
     private var lambda: Double = 0.0
@@ -37,14 +38,14 @@ class CollisionConstraint(
 
         val corr = contactNormalInGlobalCoordinates.mul(deltaLambda, Vector3d())
 
-        body0.getPositionCorrectionImpulses(corr, body0PointPosInGlobal) { linearImpulse, angularImpulse ->
+        body0.getCorrectionImpulses(corr, body0PointPosInGlobal) { linearImpulse, angularImpulse ->
             body0LinearImpulse = linearImpulse
             body0AngularImpulse = angularImpulse
         }
 
         corr.mul(-1.0)
 
-        body1.getPositionCorrectionImpulses(corr, body1PointPosInGlobal) { linearImpulse, angularImpulse ->
+        body1.getCorrectionImpulses(corr, body1PointPosInGlobal) { linearImpulse, angularImpulse ->
             body1LinearImpulse = linearImpulse
             body1AngularImpulse = angularImpulse
         }
@@ -71,14 +72,19 @@ class CollisionConstraint(
         val corr = contactNormalInGlobalCoordinates.mul(-d, Vector3d())
 
         val deltaLambda = applyBodyPairCorrectionDeltaLambdaOnly(
-            body0, body1, corr, collisionCompliance, dt, body0PointPosInGlobal, body1PointPosInGlobal, false, lambda
+            body0, body1, corr, collisionCompliance, dt, body0PointPosInGlobal, body1PointPosInGlobal, lambda
         )
+
+        if (abs(deltaLambda) < 1e-12) return
 
         prevLambda = lambda
         lambda += deltaLambda
+        // Don't let lambda go above 0 (Above 0 would move the bodies deeper into each-other instead of further away)
+        lambda = min(lambda, 0.0)
     }
 
     override fun reset() {
+        prevLambda = 0.0
         lambda = 0.0
     }
 
