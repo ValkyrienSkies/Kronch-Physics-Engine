@@ -7,6 +7,9 @@ import org.valkyrienskies.krunch.SolverType.GAUSS_SEIDEL
 import org.valkyrienskies.krunch.SolverType.JACOBI
 import org.valkyrienskies.krunch.collision.CollisionResult
 import org.valkyrienskies.krunch.collision.colliders.ColliderResolver
+import org.valkyrienskies.krunch.solver.GaussSeidelSolver
+import org.valkyrienskies.krunch.solver.JacobiSolver
+import org.valkyrienskies.krunch.solver.Solver
 import kotlin.math.abs
 import kotlin.math.asin
 import kotlin.math.min
@@ -221,61 +224,15 @@ fun simulate(
             it.reset()
         }
 
+        val solver: Solver = when (settings.solverType) {
+            GAUSS_SEIDEL -> GaussSeidelSolver()
+            JACOBI -> JacobiSolver()
+        }
+
         val useNewCollision = true
 
         if (useNewCollision) {
-            // Collide shapes with each other
-            for (i in 1..settings.iterations) {
-                collisionConstraints.forEach {
-                    it.iterate(dt)
-
-                    if (settings.solverType == GAUSS_SEIDEL) {
-                        // Update immediately
-                        it.computeUpdateImpulses { body0, body0LinearImpulse, body0AngularImpulse,
-                            body1, body1LinearImpulse, body1AngularImpulse ->
-                            // For now, update immediately
-                            if (!body0.isStatic) {
-                                if (body0LinearImpulse != null) body0.pose.p.add(body0LinearImpulse)
-                                if (body0AngularImpulse != null) body0.applyRotation(body0AngularImpulse)
-                            }
-                            if (!body1.isStatic) {
-                                if (body1LinearImpulse != null) body1.pose.p.add(body1LinearImpulse)
-                                if (body1AngularImpulse != null) body1.applyRotation(body1AngularImpulse)
-                            }
-                        }
-                    }
-                }
-                if (settings.solverType == JACOBI) {
-                    val linearImpulsesToAddMap = HashMap<Body, Vector3d>()
-                    val angularImpulsesToAddMap = HashMap<Body, Vector3d>()
-                    collisionConstraints.forEach {
-                        it.computeUpdateImpulses { body0, body0LinearImpulse, body0AngularImpulse,
-                            body1, body1LinearImpulse, body1AngularImpulse ->
-                            // For now, update immediately
-                            if (!body0.isStatic) {
-                                if (body0LinearImpulse != null)
-                                    linearImpulsesToAddMap.getOrPut(body0) { Vector3d() }.add(body0LinearImpulse)
-                                if (body0AngularImpulse != null)
-                                    angularImpulsesToAddMap.getOrPut(body0) { Vector3d() }.add(body0AngularImpulse)
-                            }
-                            if (!body1.isStatic) {
-                                if (body1LinearImpulse != null)
-                                    linearImpulsesToAddMap.getOrPut(body1) { Vector3d() }.add(body1LinearImpulse)
-                                if (body1AngularImpulse != null)
-                                    angularImpulsesToAddMap.getOrPut(body1) { Vector3d() }.add(body1AngularImpulse)
-                            }
-                        }
-                    }
-
-                    linearImpulsesToAddMap.forEach { (body, linearImpulse) ->
-                        body.pose.p.add(linearImpulse)
-                    }
-
-                    angularImpulsesToAddMap.forEach { (body, angularImpulse) ->
-                        body.applyRotation(angularImpulse)
-                    }
-                }
-            }
+            solver.solvePositionConstraints(collisionConstraints, settings.iterations, dt)
         } else {
             applySubStepToCollisions(collisions)
             resolveCollisions(collisions, dt, settings.collisionCompliance)
@@ -289,56 +246,13 @@ fun simulate(
 
         // correctRestitution(collisionConstraints, dt, settings.collisionRestitutionCompliance, false)
 
-        for (i in 1..settings.iterations) {
-            restitutionConstraints.forEach {
-                it.iterate(dt)
-
-                if (settings.solverType == GAUSS_SEIDEL) {
-                    // Update immediately
-                    it.computeUpdateImpulses { body0, body0LinearImpulse, body0AngularImpulse,
-                        body1, body1LinearImpulse, body1AngularImpulse ->
-                        // For now, update immediately
-                        if (!body0.isStatic) {
-                            if (body0LinearImpulse != null) body0.vel.add(body0LinearImpulse)
-                            if (body0AngularImpulse != null) body0.omega.add(body0AngularImpulse)
-                        }
-                        if (!body1.isStatic) {
-                            if (body1LinearImpulse != null) body1.vel.add(body1LinearImpulse)
-                            if (body1AngularImpulse != null) body1.omega.add(body1AngularImpulse)
-                        }
-                    }
-                }
-            }
-            if (settings.solverType == JACOBI) {
-                val linearImpulsesToAddMap = HashMap<Body, Vector3d>()
-                val angularImpulsesToAddMap = HashMap<Body, Vector3d>()
-                restitutionConstraints.forEach {
-                    it.computeUpdateImpulses { body0, body0LinearImpulse, body0AngularImpulse,
-                        body1, body1LinearImpulse, body1AngularImpulse ->
-                        // For now, update immediately
-                        if (!body0.isStatic) {
-                            if (body0LinearImpulse != null)
-                                linearImpulsesToAddMap.getOrPut(body0) { Vector3d() }.add(body0LinearImpulse)
-                            if (body0AngularImpulse != null)
-                                angularImpulsesToAddMap.getOrPut(body0) { Vector3d() }.add(body0AngularImpulse)
-                        }
-                        if (!body1.isStatic) {
-                            if (body1LinearImpulse != null)
-                                linearImpulsesToAddMap.getOrPut(body1) { Vector3d() }.add(body1LinearImpulse)
-                            if (body1AngularImpulse != null)
-                                angularImpulsesToAddMap.getOrPut(body1) { Vector3d() }.add(body1AngularImpulse)
-                        }
-                    }
-                }
-
-                linearImpulsesToAddMap.forEach { (body, linearImpulse) ->
-                    body.vel.add(linearImpulse)
-                }
-
-                angularImpulsesToAddMap.forEach { (body, angularImpulse) ->
-                    body.omega.add(angularImpulse)
-                }
-            }
+        // For now just test the Jacobi solver for restitution
+        val testJacobiSolver = true
+        if (testJacobiSolver) {
+            val jacobiSolver = JacobiSolver()
+            jacobiSolver.solveVelocityConstraints(restitutionConstraints, settings.iterations, dt)
+        } else {
+            solver.solveVelocityConstraints(restitutionConstraints, settings.iterations, dt)
         }
 
         // Only run this once

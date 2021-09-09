@@ -14,10 +14,10 @@ class CollisionConstraint(
     private val collisionCompliance: Double
 ) : TwoBodyConstraint {
 
-    private var lambda: Double = 0.0
-    private var prevLambda: Double = 0.0
+    internal var lambda: Double = 0.0
+    internal var prevLambda: Double = 0.0
 
-    internal inline fun computeUpdateImpulses(
+    override fun computeUpdateImpulses(
         function: (
             body0: Body, body0LinearImpulse: Vector3dc?, body0AngularImpulse: Vector3dc?,
             body1: Body, body1LinearImpulse: Vector3dc?, body1AngularImpulse: Vector3dc?

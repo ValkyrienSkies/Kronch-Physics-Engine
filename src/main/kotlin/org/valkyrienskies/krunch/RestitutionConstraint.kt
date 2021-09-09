@@ -18,7 +18,7 @@ class RestitutionConstraint(
     private var lambda: Double = 0.0
     private var prevLambda: Double = 0.0
 
-    internal inline fun computeUpdateImpulses(
+    override fun computeUpdateImpulses(
         function: (
             body0: Body, body0LinearImpulse: Vector3dc?, body0AngularImpulse: Vector3dc?,
             body1: Body, body1LinearImpulse: Vector3dc?, body1AngularImpulse: Vector3dc?
@@ -54,7 +54,10 @@ class RestitutionConstraint(
 
     override fun iterate(dt: Double) {
         // Don't correct restitution if the collision constraint didn't do anything
-        if (collisionConstraint.getForceBetweenContacts() == 0.0) return
+        if (collisionConstraint.getForceBetweenContacts() == 0.0) {
+            prevLambda = lambda
+            return
+        }
 
         val positionInFirstBody = body0ContactPosInBody0Coordinates
         val positionInSecondBody = body1ContactPosInBody1Coordinates

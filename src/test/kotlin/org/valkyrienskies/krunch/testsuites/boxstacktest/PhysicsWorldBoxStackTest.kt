@@ -59,9 +59,9 @@ class PhysicsWorldBoxStackTest : PhysicsWorld() {
         // endregion
 
         bodies.add(groundBody)
-        bodies.add(firstBoxBody)
+        // bodies.add(firstBoxBody)
         bodies.add(secondBoxBody)
-        bodies.add(thirdBoxBody)
-        bodies.add(fourthBoxBody)
+        // bodies.add(thirdBoxBody)
+        // bodies.add(fourthBoxBody)
     }
 }

@@ -5,6 +5,7 @@ import org.joml.Vector3d
 import org.joml.Vector3dc
 import org.valkyrienskies.krunch.collision.shapes.CollisionShape
 import org.valkyrienskies.krunch.collision.shapes.SphereShape
+import kotlin.math.abs
 
 class Body(_pose: Pose) {
 
@@ -15,8 +16,8 @@ class Body(_pose: Pose) {
     val omega = Vector3d()
 
     // [prevVel] and [prevOmega] are used to compute friction
-    private val prevVel = Vector3d()
-    private val prevOmega = Vector3d()
+    internal val prevVel = Vector3d()
+    internal val prevOmega = Vector3d()
 
     var invMass = 1.0
     val invInertia = Vector3d(1.0, 1.0, 1.0)
@@ -80,7 +81,13 @@ class Body(_pose: Pose) {
 
         this.vel.mul(1.0 / dt)
 
-        val dq = this.pose.q.mul(this.prevPose.q.conjugate(), Quaterniond())
+        val dq = this.pose.q.mul(Quaterniond(this.prevPose.q).conjugate(), Quaterniond())
+
+        dq.normalize()
+
+        if (abs(dq.x) > 1e-10) {
+            val j = 1
+        }
 
         this.omega.set(dq.x * 2.0 / dt, dq.y * 2.0 / dt, dq.z * 2.0 / dt)
         if (dq.w < 0.0)

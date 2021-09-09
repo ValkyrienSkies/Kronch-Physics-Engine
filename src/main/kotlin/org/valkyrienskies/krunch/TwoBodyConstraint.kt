@@ -1,5 +1,7 @@
 package org.valkyrienskies.krunch
 
+import org.joml.Vector3dc
+
 interface TwoBodyConstraint {
 
     fun iterate(dt: Double)
@@ -16,4 +18,11 @@ interface TwoBodyConstraint {
      * otherwise it should be ignored.
      */
     fun shouldApplyThisSubStep(): Boolean
+
+    fun computeUpdateImpulses(
+        function: (
+            body0: Body, body0LinearImpulse: Vector3dc?, body0AngularImpulse: Vector3dc?,
+            body1: Body, body1LinearImpulse: Vector3dc?, body1AngularImpulse: Vector3dc?
+        ) -> Unit
+    )
 }
