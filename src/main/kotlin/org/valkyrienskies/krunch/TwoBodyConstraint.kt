@@ -4,7 +4,7 @@ import org.joml.Vector3dc
 
 interface TwoBodyConstraint {
 
-    fun iterate(dt: Double)
+    fun iterate(dt: Double, weight: Double = 1.0)
 
     /**
      * Resets this constraint to its initial state. Used between sub-steps

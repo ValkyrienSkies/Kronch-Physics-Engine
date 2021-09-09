@@ -52,7 +52,7 @@ class RestitutionConstraint(
         function(body0, body0LinearImpulse, body0AngularImpulse, body1, body1LinearImpulse, body1AngularImpulse)
     }
 
-    override fun iterate(dt: Double) {
+    override fun iterate(dt: Double, weight: Double) {
         // Don't correct restitution if the collision constraint didn't do anything
         if (collisionConstraint.getForceBetweenContacts() == 0.0) {
             prevLambda = lambda
@@ -105,7 +105,7 @@ class RestitutionConstraint(
         )
 
         prevLambda = lambda
-        lambda += deltaLambda
+        lambda += weight * deltaLambda
     }
 
     override fun reset() {

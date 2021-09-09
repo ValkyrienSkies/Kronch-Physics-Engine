@@ -53,7 +53,7 @@ class CollisionConstraint(
         function(body0, body0LinearImpulse, body0AngularImpulse, body1, body1LinearImpulse, body1AngularImpulse)
     }
 
-    override fun iterate(dt: Double) {
+    override fun iterate(dt: Double, weight: Double) {
         // Update lambda
         val body0PointPosInGlobal = body0.pose.transform(Vector3d(body0ContactPosInBody0Coordinates))
         val body1PointPosInGlobal = body1.pose.transform(Vector3d(body1ContactPosInBody1Coordinates))
@@ -78,7 +78,7 @@ class CollisionConstraint(
         if (abs(deltaLambda) < 1e-12) return
 
         prevLambda = lambda
-        lambda += deltaLambda
+        lambda += weight * deltaLambda
         // Don't let lambda go above 0 (Above 0 would move the bodies deeper into each-other instead of further away)
         lambda = min(lambda, 0.0)
     }

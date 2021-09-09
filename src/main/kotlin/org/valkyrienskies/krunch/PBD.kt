@@ -229,14 +229,7 @@ fun simulate(
             JACOBI -> JacobiSolver()
         }
 
-        val useNewCollision = true
-
-        if (useNewCollision) {
-            solver.solvePositionConstraints(collisionConstraints, settings.iterations, dt)
-        } else {
-            applySubStepToCollisions(collisions)
-            resolveCollisions(collisions, dt, settings.collisionCompliance)
-        }
+        solver.solvePositionConstraints(collisionConstraints, settings.iterations, dt)
 
         // Step 3, compute new velocities given the positional updates
         for (body in bodies)
@@ -247,13 +240,7 @@ fun simulate(
         // correctRestitution(collisionConstraints, dt, settings.collisionRestitutionCompliance, false)
 
         // For now just test the Jacobi solver for restitution
-        val testJacobiSolver = true
-        if (testJacobiSolver) {
-            val jacobiSolver = JacobiSolver()
-            jacobiSolver.solveVelocityConstraints(restitutionConstraints, settings.iterations, dt)
-        } else {
-            solver.solveVelocityConstraints(restitutionConstraints, settings.iterations, dt)
-        }
+        solver.solveVelocityConstraints(restitutionConstraints, settings.iterations, dt)
 
         // Only run this once
         // applyDynamicFriction(collisions, dt, settings.dynamicFrictionCompliance)
