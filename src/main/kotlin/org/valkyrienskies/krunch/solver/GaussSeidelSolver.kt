@@ -1,12 +1,12 @@
 package org.valkyrienskies.krunch.solver
 
-import org.valkyrienskies.krunch.TwoBodyConstraint
+import org.valkyrienskies.krunch.constraints.TwoBodyConstraint
 
 class GaussSeidelSolver : Solver {
 
     // See https://en.wikipedia.org/wiki/Jacobi_method#Weighted_Jacobi_method
-    private val positionConstraintWeight = .25
-    private val velocityConstraintWeight = .25
+    private val positionConstraintWeight = 1.0
+    private val velocityConstraintWeight = 1.0
 
     override fun solvePositionConstraints(constraints: List<TwoBodyConstraint>, iterations: Int, dt: Double) {
         for (i in 1..iterations) {

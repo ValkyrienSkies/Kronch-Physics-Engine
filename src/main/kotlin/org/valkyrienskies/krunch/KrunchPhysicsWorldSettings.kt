@@ -4,7 +4,7 @@ import org.valkyrienskies.krunch.SolverType.JACOBI
 
 open class KrunchPhysicsWorldSettings(
     override var subSteps: Int = 20,
-    override var iterations: Int = 20,
+    override var iterations: Int = 5,
     override var collisionCompliance: Double = 0.0,
     override var collisionRestitutionCompliance: Double = 0.0,
     override var dynamicFrictionCompliance: Double = 0.0,

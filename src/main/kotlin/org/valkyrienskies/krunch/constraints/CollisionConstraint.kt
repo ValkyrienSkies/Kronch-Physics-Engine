@@ -1,7 +1,10 @@
-package org.valkyrienskies.krunch
+package org.valkyrienskies.krunch.constraints
 
 import org.joml.Vector3d
 import org.joml.Vector3dc
+import org.valkyrienskies.krunch.Body
+import org.valkyrienskies.krunch.PAIR_CORRECTION_MIN_LENGTH
+import org.valkyrienskies.krunch.applyBodyPairCorrectionDeltaLambdaOnly
 import kotlin.math.abs
 import kotlin.math.min
 

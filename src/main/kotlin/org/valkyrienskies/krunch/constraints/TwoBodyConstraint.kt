@@ -1,6 +1,7 @@
-package org.valkyrienskies.krunch
+package org.valkyrienskies.krunch.constraints
 
 import org.joml.Vector3dc
+import org.valkyrienskies.krunch.Body
 
 interface TwoBodyConstraint {
 

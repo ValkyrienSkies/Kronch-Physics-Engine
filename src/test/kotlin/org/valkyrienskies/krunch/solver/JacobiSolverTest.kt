@@ -4,10 +4,11 @@ import org.joml.Quaterniond
 import org.joml.Vector3d
 import org.junit.jupiter.api.Test
 import org.valkyrienskies.krunch.Body
-import org.valkyrienskies.krunch.CollisionConstraint
 import org.valkyrienskies.krunch.KrunchPhysicsWorldSettings
 import org.valkyrienskies.krunch.Pose
-import org.valkyrienskies.krunch.RestitutionConstraint
+import org.valkyrienskies.krunch.SolverType.JACOBI
+import org.valkyrienskies.krunch.constraints.CollisionConstraint
+import org.valkyrienskies.krunch.constraints.RestitutionConstraint
 
 internal class JacobiSolverTest {
 
@@ -15,6 +16,7 @@ internal class JacobiSolverTest {
     fun testRestitutionCorrectionConvergence() {
         val settings = KrunchPhysicsWorldSettings()
         settings.iterations = 20
+        settings.solverType = JACOBI
 
         val dt = 8.333333333333333E-4
 

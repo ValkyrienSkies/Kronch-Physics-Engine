@@ -7,6 +7,8 @@ import org.valkyrienskies.krunch.SolverType.GAUSS_SEIDEL
 import org.valkyrienskies.krunch.SolverType.JACOBI
 import org.valkyrienskies.krunch.collision.CollisionResult
 import org.valkyrienskies.krunch.collision.colliders.ColliderResolver
+import org.valkyrienskies.krunch.constraints.CollisionConstraint
+import org.valkyrienskies.krunch.constraints.RestitutionConstraint
 import org.valkyrienskies.krunch.solver.GaussSeidelSolver
 import org.valkyrienskies.krunch.solver.JacobiSolver
 import org.valkyrienskies.krunch.solver.Solver
