@@ -2,7 +2,7 @@ package org.valkyrienskies.krunch.solver
 
 import org.joml.Vector3d
 import org.valkyrienskies.krunch.Body
-import org.valkyrienskies.krunch.constraints.TwoBodyConstraint
+import org.valkyrienskies.krunch.constraints.Constraint
 
 class JacobiSolver : Solver {
 
@@ -10,7 +10,7 @@ class JacobiSolver : Solver {
     private val positionConstraintWeight = 1.0 / 8.0
     private val velocityConstraintWeight = 1.0 / 8.0
 
-    override fun solvePositionConstraints(constraints: List<TwoBodyConstraint>, iterations: Int, dt: Double) {
+    override fun solvePositionConstraints(constraints: List<Constraint>, iterations: Int, dt: Double) {
         for (i in 1..iterations) {
             constraints.forEach {
                 it.iterate(dt, positionConstraintWeight)
@@ -18,20 +18,13 @@ class JacobiSolver : Solver {
             val linearImpulsesToAddMap = HashMap<Body, Vector3d>()
             val angularImpulsesToAddMap = HashMap<Body, Vector3d>()
             constraints.forEach {
-                it.computeUpdateImpulses { body0, body0LinearImpulse, body0AngularImpulse,
-                    body1, body1LinearImpulse, body1AngularImpulse ->
+                it.computeUpdateImpulses { body, bodyLinearImpulse, bodyAngularImpulse ->
                     // For now, update immediately
-                    if (!body0.isStatic) {
-                        if (body0LinearImpulse != null)
-                            linearImpulsesToAddMap.getOrPut(body0) { Vector3d() }.add(body0LinearImpulse)
-                        if (body0AngularImpulse != null)
-                            angularImpulsesToAddMap.getOrPut(body0) { Vector3d() }.add(body0AngularImpulse)
-                    }
-                    if (!body1.isStatic) {
-                        if (body1LinearImpulse != null)
-                            linearImpulsesToAddMap.getOrPut(body1) { Vector3d() }.add(body1LinearImpulse)
-                        if (body1AngularImpulse != null)
-                            angularImpulsesToAddMap.getOrPut(body1) { Vector3d() }.add(body1AngularImpulse)
+                    if (!body.isStatic) {
+                        if (bodyLinearImpulse != null)
+                            linearImpulsesToAddMap.getOrPut(body) { Vector3d() }.add(bodyLinearImpulse)
+                        if (bodyAngularImpulse != null)
+                            angularImpulsesToAddMap.getOrPut(body) { Vector3d() }.add(bodyAngularImpulse)
                     }
                 }
             }
@@ -46,7 +39,7 @@ class JacobiSolver : Solver {
         }
     }
 
-    override fun solveVelocityConstraints(constraints: List<TwoBodyConstraint>, iterations: Int, dt: Double) {
+    override fun solveVelocityConstraints(constraints: List<Constraint>, iterations: Int, dt: Double) {
         for (i in 1..iterations) {
             constraints.forEach {
                 it.iterate(dt, velocityConstraintWeight)
@@ -54,20 +47,13 @@ class JacobiSolver : Solver {
             val linearImpulsesToAddMap = HashMap<Body, Vector3d>()
             val angularImpulsesToAddMap = HashMap<Body, Vector3d>()
             constraints.forEach {
-                it.computeUpdateImpulses { body0, body0LinearImpulse, body0AngularImpulse,
-                    body1, body1LinearImpulse, body1AngularImpulse ->
+                it.computeUpdateImpulses { body, bodyLinearImpulse, bodyAngularImpulse ->
                     // For now, update immediately
-                    if (!body0.isStatic) {
-                        if (body0LinearImpulse != null)
-                            linearImpulsesToAddMap.getOrPut(body0) { Vector3d() }.add(body0LinearImpulse)
-                        if (body0AngularImpulse != null)
-                            angularImpulsesToAddMap.getOrPut(body0) { Vector3d() }.add(body0AngularImpulse)
-                    }
-                    if (!body1.isStatic) {
-                        if (body1LinearImpulse != null)
-                            linearImpulsesToAddMap.getOrPut(body1) { Vector3d() }.add(body1LinearImpulse)
-                        if (body1AngularImpulse != null)
-                            angularImpulsesToAddMap.getOrPut(body1) { Vector3d() }.add(body1AngularImpulse)
+                    if (!body.isStatic) {
+                        if (bodyLinearImpulse != null)
+                            linearImpulsesToAddMap.getOrPut(body) { Vector3d() }.add(bodyLinearImpulse)
+                        if (bodyAngularImpulse != null)
+                            angularImpulsesToAddMap.getOrPut(body) { Vector3d() }.add(bodyAngularImpulse)
                     }
                 }
             }

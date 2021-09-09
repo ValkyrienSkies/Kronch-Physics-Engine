@@ -3,7 +3,7 @@ package org.valkyrienskies.krunch.constraints
 import org.joml.Vector3dc
 import org.valkyrienskies.krunch.Body
 
-interface TwoBodyConstraint {
+interface Constraint {
 
     fun iterate(dt: Double, weight: Double = 1.0)
 
@@ -20,10 +20,12 @@ interface TwoBodyConstraint {
      */
     fun shouldApplyThisSubStep(): Boolean
 
+    /**
+     * Returns the impulses to be applied to each body involved in this constraint.
+     */
     fun computeUpdateImpulses(
         function: (
-            body0: Body, body0LinearImpulse: Vector3dc?, body0AngularImpulse: Vector3dc?,
-            body1: Body, body1LinearImpulse: Vector3dc?, body1AngularImpulse: Vector3dc?
+            body: Body, bodyLinearImpulse: Vector3dc?, bodyAngularImpulse: Vector3dc?
         ) -> Unit
     )
 }

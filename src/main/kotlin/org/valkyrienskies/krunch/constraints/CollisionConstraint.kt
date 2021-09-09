@@ -15,15 +15,14 @@ class CollisionConstraint(
     internal val body1ContactPosInBody1Coordinates: Vector3dc,
     internal val contactNormalInGlobalCoordinates: Vector3dc,
     private val collisionCompliance: Double
-) : TwoBodyConstraint {
+) : Constraint {
 
     internal var lambda: Double = 0.0
     internal var prevLambda: Double = 0.0
 
     override fun computeUpdateImpulses(
         function: (
-            body0: Body, body0LinearImpulse: Vector3dc?, body0AngularImpulse: Vector3dc?,
-            body1: Body, body1LinearImpulse: Vector3dc?, body1AngularImpulse: Vector3dc?
+            body: Body, bodyLinearImpulse: Vector3dc?, bodyAngularImpulse: Vector3dc?
         ) -> Unit
     ) {
         var body0LinearImpulse: Vector3dc? = null
@@ -53,7 +52,8 @@ class CollisionConstraint(
             body1AngularImpulse = angularImpulse
         }
 
-        function(body0, body0LinearImpulse, body0AngularImpulse, body1, body1LinearImpulse, body1AngularImpulse)
+        function(body0, body0LinearImpulse, body0AngularImpulse)
+        function(body1, body1LinearImpulse, body1AngularImpulse)
     }
 
     override fun iterate(dt: Double, weight: Double) {

@@ -204,10 +204,9 @@ fun simulate(
     val dt = timeStep / settings.subSteps
 
     // Only solve collision detection once per time step
-    val collisions = generateCollisionConstraints(bodies, timeStep, speculativeContactDistance = 0.05)
+    val collisions = generateCollisions(bodies, timeStep, speculativeContactDistance = 0.05)
     val collisionConstraints = createCollisionConstraints(collisions, settings)
     val restitutionConstraints = createRestitutionConstraints(collisionConstraints, settings)
-    // val positionConstraints: List<TwoBodyConstraint> = ArrayList(collisionConstraints)
 
     for (step in 0 until settings.subSteps) {
         // Step 1, integrate velocity into position
@@ -238,8 +237,6 @@ fun simulate(
             if (!body.isStatic) body.update(dt)
 
         // Step 3.5, update velocities to apply friction and collision restitution
-
-        // correctRestitution(collisionConstraints, dt, settings.collisionRestitutionCompliance, false)
 
         // For now just test the Jacobi solver for restitution
         solver.solveVelocityConstraints(restitutionConstraints, settings.iterations, dt)
@@ -458,7 +455,7 @@ private fun resolveCollisions(collisions: List<CollisionData>, dt: Double, compl
 
 private data class CollisionData(val body0: Body, val body1: Body, val collisionResult: CollisionResult)
 
-private fun generateCollisionConstraints(
+private fun generateCollisions(
     bodies: List<Body>, dt: Double, speculativeContactDistance: Double = 0.05
 ): List<CollisionData> {
     val collisionDataList = ArrayList<CollisionData>()
