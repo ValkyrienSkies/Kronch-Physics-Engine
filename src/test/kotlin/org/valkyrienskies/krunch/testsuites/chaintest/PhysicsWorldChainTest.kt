@@ -2,6 +2,7 @@ package org.valkyrienskies.krunch.testsuites.chaintest
 
 import org.joml.Quaterniond
 import org.joml.Vector3d
+import org.joml.Vector3dc
 import org.joml.Vector3i
 import org.joml.Vector3ic
 import org.valkyrienskies.krunch.Body
@@ -138,5 +139,19 @@ class PhysicsWorldChainTest : PhysicsWorld() {
             bodies.add(thirdBoxBody)
             joints.add(secondBoxToThirdBoxJoint)
         }
+    }
+
+    private var firstTick = true
+
+    override fun simulate(gravity: Vector3dc, timeStep: Double) {
+        super.simulate(gravity, timeStep)
+        if (firstTick) {
+            // Zero the initial velocity added from satisfying constraints
+            bodies.forEach {
+                it.vel.set(0.0)
+                it.omega.set(0.0)
+            }
+        }
+        firstTick = false
     }
 }

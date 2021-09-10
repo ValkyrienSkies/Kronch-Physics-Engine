@@ -97,7 +97,7 @@ class Body(_pose: Pose) {
         // this.vel.mul(1.0 - 1.0 * dt)
     }
 
-    fun getVelocityAt(pos: Vector3d): Vector3d {
+    fun getVelocityAt(pos: Vector3dc): Vector3d {
         // if (isStatic) return Vector3d()
         val vel = Vector3d(0.0, 0.0, 0.0)
         pos.sub(this.pose.p, vel)
@@ -106,7 +106,7 @@ class Body(_pose: Pose) {
         return vel
     }
 
-    fun getPrevVelocityAt(pos: Vector3d): Vector3d {
+    fun getPrevVelocityAt(pos: Vector3dc): Vector3d {
         // if (isStatic) return Vector3d()
         val vel = Vector3d(0.0, 0.0, 0.0)
         pos.sub(this.pose.p, vel)

@@ -203,6 +203,11 @@ fun simulate(
     timeStep: Double,
     settings: KrunchPhysicsWorldSettingsc
 ) {
+    val solver: Solver = when (settings.solverType) {
+        GAUSS_SEIDEL -> GaussSeidelSolver()
+        JACOBI -> JacobiSolver()
+    }
+
     val dt = timeStep / settings.subSteps
 
     // Only solve collision detection once per time step
@@ -224,41 +229,28 @@ fun simulate(
             if (!body.isStatic) body.integrate(dt, gravity)
 
         // Step 2, solve positional constraints (like joints and contacts)
-        // TODO: Enable joints
-        // for (joint in joints)
-        //     joint.solvePos(dt)
-
         positionConstraints.forEach {
             it.reset()
         }
-
-        val solver: Solver = when (settings.solverType) {
-            GAUSS_SEIDEL -> GaussSeidelSolver()
-            JACOBI -> JacobiSolver()
-        }
-
         solver.solvePositionConstraints(positionConstraints, settings.iterations, dt)
 
-        // applyStaticFriction(collisionConstraints, dt, settings.dynamicFrictionCompliance)
+        // Step 2.5, add static friction using a Gauss-Seidel, regardless of [solver].
+        // (This gives us unconditional stability)
+        applyStaticFriction(collisionConstraints, dt, settings.dynamicFrictionCompliance)
 
         // Step 3, compute new velocities given the positional updates
         for (body in bodies)
             if (!body.isStatic) body.update(dt)
 
-        // Step 3.5, update velocities to apply friction and collision restitution
+        // Step 4, solve velocity constraints
         velocityConstraints.forEach {
             it.reset()
         }
-
-        // For now just test the Jacobi solver for restitution
         solver.solveVelocityConstraints(velocityConstraints, settings.iterations, dt)
 
-        // Only run this once
-        // applyDynamicFriction(collisionConstraints, dt, settings.dynamicFrictionCompliance)
-
-        // Step 4, solve velocity constraints
-        // for (joint in joints)
-        //     joint.solveVel(dt)
+        // Step 4.5, add dynamic friction using a Gauss-Seidel, regardless of [solver].
+        // (This gives us unconditional stability)
+        applyDynamicFriction(collisionConstraints, dt, settings.dynamicFrictionCompliance)
     }
 }
 
