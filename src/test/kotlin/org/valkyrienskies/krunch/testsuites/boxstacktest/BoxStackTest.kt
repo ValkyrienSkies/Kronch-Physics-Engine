@@ -7,6 +7,6 @@ import org.valkyrienskies.krunch.testsuites.OpenGLWindow
 class BoxStackTest
 
 fun main(args: Array<String>) {
-    val openGLWindow = OpenGLWindow(PhysicsWorldBoxStackTest(), cameraEyePos = Vector3f(0.0f, 8.0f, 15.0f))
+    val openGLWindow = OpenGLWindow(PhysicsWorldBoxStackTest(), cameraEyePos = Vector3f(0.0f, 90.0f, 15.0f))
     openGLWindow.run()
 }

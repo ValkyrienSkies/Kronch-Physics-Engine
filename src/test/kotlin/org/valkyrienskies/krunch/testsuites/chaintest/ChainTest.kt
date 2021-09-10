@@ -7,6 +7,6 @@ import org.valkyrienskies.krunch.testsuites.OpenGLWindow
 class ChainTest
 
 fun main(args: Array<String>) {
-    val openGLWindow = OpenGLWindow(PhysicsWorldChainTest(), cameraEyePos = Vector3f(0.0f, 8.0f, 15.0f))
+    val openGLWindow = OpenGLWindow(PhysicsWorldChainTest(), cameraEyePos = Vector3f(0.0f, 50.0f, 15.0f))
     openGLWindow.run()
 }

@@ -5,6 +5,7 @@ import org.joml.Vector3d
 import org.joml.Vector3dc
 import org.valkyrienskies.krunch.collision.shapes.CollisionShape
 import org.valkyrienskies.krunch.collision.shapes.SphereShape
+import kotlin.math.abs
 
 class Body(_pose: Pose) {
 
@@ -15,8 +16,8 @@ class Body(_pose: Pose) {
     val omega = Vector3d()
 
     // [prevVel] and [prevOmega] are used to compute friction
-    private val prevVel = Vector3d()
-    private val prevOmega = Vector3d()
+    internal val prevVel = Vector3d()
+    internal val prevOmega = Vector3d()
 
     var invMass = 1.0
     val invInertia = Vector3d(1.0, 1.0, 1.0)
@@ -41,8 +42,8 @@ class Body(_pose: Pose) {
         )
     }
 
-    fun applyRotation(rot: Vector3d, scale: Double = 1.0) {
-        var scale = scale
+    fun applyRotation(rot: Vector3dc, scale: Double = 1.0) {
+        var scaleConsideringMaxRotation = scale
         // safety clamping. This happens very rarely if the solver
         // wants to turn the body by more than 30 degrees in the
         // orders of milliseconds
@@ -50,10 +51,13 @@ class Body(_pose: Pose) {
         val maxPhi = 0.5
         val phi = rot.length()
 
-        if (phi * scale > maxRotationPerSubstep)
-            scale = maxRotationPerSubstep / phi
+        if (phi * scaleConsideringMaxRotation > maxRotationPerSubstep)
+            scaleConsideringMaxRotation = maxRotationPerSubstep / phi
 
-        val dq = Quaterniond(rot.x * scale, rot.y * scale, rot.z * scale, 0.0)
+        val dq = Quaterniond(
+            rot.x() * scaleConsideringMaxRotation, rot.y() * scaleConsideringMaxRotation,
+            rot.z() * scaleConsideringMaxRotation, 0.0
+        )
         dq.mul(this.pose.q)
         this.pose.q.set(
             this.pose.q.x + 0.5 * dq.x, this.pose.q.y + 0.5 * dq.y,
@@ -77,7 +81,13 @@ class Body(_pose: Pose) {
 
         this.vel.mul(1.0 / dt)
 
-        val dq = this.pose.q.mul(this.prevPose.q.conjugate(), Quaterniond())
+        val dq = this.pose.q.mul(Quaterniond(this.prevPose.q).conjugate(), Quaterniond())
+
+        dq.normalize()
+
+        if (abs(dq.x) > 1e-10) {
+            val j = 1
+        }
 
         this.omega.set(dq.x * 2.0 / dt, dq.y * 2.0 / dt, dq.z * 2.0 / dt)
         if (dq.w < 0.0)
@@ -87,7 +97,7 @@ class Body(_pose: Pose) {
         // this.vel.mul(1.0 - 1.0 * dt)
     }
 
-    fun getVelocityAt(pos: Vector3d): Vector3d {
+    fun getVelocityAt(pos: Vector3dc): Vector3d {
         // if (isStatic) return Vector3d()
         val vel = Vector3d(0.0, 0.0, 0.0)
         pos.sub(this.pose.p, vel)
@@ -96,7 +106,7 @@ class Body(_pose: Pose) {
         return vel
     }
 
-    fun getPrevVelocityAt(pos: Vector3d): Vector3d {
+    fun getPrevVelocityAt(pos: Vector3dc): Vector3d {
         // if (isStatic) return Vector3d()
         val vel = Vector3d(0.0, 0.0, 0.0)
         pos.sub(this.pose.p, vel)
@@ -145,6 +155,40 @@ class Body(_pose: Pose) {
             this.omega.add(dq)
         else
             this.applyRotation(dq)
+    }
+
+    /**
+     * Returns the impulse that will adjust the position/velocity for constraints.
+     */
+    inline fun getCorrectionImpulses(
+        corr: Vector3dc, pos: Vector3dc? = null,
+        function: (linearImpulse: Vector3dc?, angularImpulse: Vector3dc?) -> Unit
+    ) {
+        var linearImpulse: Vector3dc? = null
+        var angularImpulse: Vector3dc? = null
+
+        val dq = Vector3d()
+        if (pos == null)
+            dq.set(corr)
+        else {
+            // this.pose.p.add(corr.x() * this.invMass, corr.y() * this.invMass, corr.z() * this.invMass)
+            linearImpulse =
+                Vector3d(corr.x() * this.invMass, corr.y() * this.invMass, corr.z() * this.invMass)
+            pos.sub(this.pose.p, dq)
+            dq.cross(corr)
+        }
+        this.pose.invRotate(dq)
+        dq.set(
+            this.invInertia.x * dq.x,
+            this.invInertia.y * dq.y, this.invInertia.z * dq.z
+        )
+        this.pose.rotate(dq)
+
+        angularImpulse = dq
+
+        // this.applyRotation(dq)
+
+        function(linearImpulse, angularImpulse)
     }
 
     companion object {

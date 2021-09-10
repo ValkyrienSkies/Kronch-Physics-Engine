@@ -30,26 +30,6 @@ class PhysicsWorldBoxStackTest : PhysicsWorld() {
 
         val singleVoxelShape = TSDFVoxelShape.createNewVoxelShape(listOf(Vector3i()))
 
-        val firstBoxPose = Pose(Vector3d(0.0, 2.0, 0.0), Quaterniond())
-        val firstBoxBody = Body(firstBoxPose)
-        firstBoxBody.setBox(boxSize)
-        firstBoxBody.shape = singleVoxelShape
-
-        val secondBoxPose = Pose(Vector3d(0.0, 3.0, 0.0), Quaterniond())
-        val secondBoxBody = Body(secondBoxPose)
-        secondBoxBody.setBox(boxSize)
-        secondBoxBody.shape = singleVoxelShape
-
-        val thirdBoxPose = Pose(Vector3d(0.0, 4.0, 0.0), Quaterniond())
-        val thirdBoxBody = Body(thirdBoxPose)
-        thirdBoxBody.setBox(boxSize)
-        thirdBoxBody.shape = singleVoxelShape
-
-        val fourthBoxPose = Pose(Vector3d(0.3, 20.0, 0.0), Quaterniond())
-        val fourthBoxBody = Body(fourthBoxPose)
-        fourthBoxBody.setBox(boxSize)
-        fourthBoxBody.shape = singleVoxelShape
-
         val groundPose = Pose(Vector3d(0.0, 0.0, 0.0), Quaterniond().rotateAxis(Math.toRadians(0.0), 0.0, 1.0, 1.0))
         val groundBody = Body(groundPose)
         groundBody.setBox(boxSize)
@@ -59,9 +39,13 @@ class PhysicsWorldBoxStackTest : PhysicsWorld() {
         // endregion
 
         bodies.add(groundBody)
-        bodies.add(firstBoxBody)
-        bodies.add(secondBoxBody)
-        bodies.add(thirdBoxBody)
-        bodies.add(fourthBoxBody)
+
+        for (i in 1..100) {
+            val boxPose = Pose(Vector3d(0.0, i.toDouble() + 1, 0.0), Quaterniond())
+            val boxBody = Body(boxPose)
+            boxBody.setBox(boxSize)
+            boxBody.shape = singleVoxelShape
+            bodies.add(boxBody)
+        }
     }
 }
