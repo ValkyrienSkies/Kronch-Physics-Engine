@@ -11,6 +11,7 @@ import org.valkyrienskies.krunch.JointType.SPHERICAL
 import org.valkyrienskies.krunch.PhysicsWorld
 import org.valkyrienskies.krunch.Pose
 import org.valkyrienskies.krunch.collision.shapes.TSDFVoxelShape
+import kotlin.math.abs
 
 class PhysicsWorldChainTest : PhysicsWorld() {
 
@@ -21,15 +22,20 @@ class PhysicsWorldChainTest : PhysicsWorld() {
         val groundBodyVoxels = ArrayList<Vector3ic>()
         for (x in -10..10) {
             for (z in -10..10) {
+                if ((abs(x) == 10) or (abs(z) == 10)) {
+                    for (y in 0..10) {
+                        groundBodyVoxels.add(Vector3i(x, y, z))
+                    }
+                }
                 groundBodyVoxels.add(Vector3i(x, 0, z))
             }
         }
 
-        for (x in -2..2) {
-            for (z in -2..2) {
-                groundBodyVoxels.add(Vector3i(x, 1, z))
-            }
-        }
+        // for (x in -2..2) {
+        //     for (z in -2..2) {
+        //         groundBodyVoxels.add(Vector3i(x, 1, z))
+        //     }
+        // }
 
         // groundBodyVoxels.add(Vector3i(0, 2, 0))
 
@@ -51,17 +57,17 @@ class PhysicsWorldChainTest : PhysicsWorld() {
         firstBoxBody.setBox(boxSize)
         firstBoxBody.shape = singleVoxelShape
 
-        val secondBoxPose = Pose(Vector3d(2.0, 4.5, 0.0), Quaterniond())
+        val secondBoxPose = Pose(Vector3d(2.0, 8.5, 0.0), Quaterniond())
         val secondBoxBody = Body(secondBoxPose)
         secondBoxBody.setBox(boxSize)
         secondBoxBody.shape = biggerVoxelShape
 
-        val thirdBoxPose = Pose(Vector3d(5.0, 4.5, 0.0), Quaterniond())
+        val thirdBoxPose = Pose(Vector3d(5.0, 8.5, 0.0), Quaterniond())
         val thirdBoxBody = Body(thirdBoxPose)
         thirdBoxBody.setBox(boxSize)
         thirdBoxBody.shape = biggerVoxelShape
 
-        val groundPose = Pose(Vector3d(0.0, 0.0, 0.0), Quaterniond().rotateAxis(Math.toRadians(20.0), 0.0, 1.0, 1.0))
+        val groundPose = Pose(Vector3d(0.0, 0.0, 0.0), Quaterniond().rotateAxis(Math.toRadians(10.0), 0.0, 1.0, 1.0))
         val groundBody = Body(groundPose)
         groundBody.setBox(boxSize)
         groundBody.shape = TSDFVoxelShape.createNewVoxelShape(groundBodyVoxels)
@@ -78,7 +84,7 @@ class PhysicsWorldChainTest : PhysicsWorld() {
 
         val firstBoxToSecondBoxJoint =
             Joint(
-                SPHERICAL, firstBoxBody, secondBoxBody, Pose(Vector3d(-0.5, -.5, -0.5), Quaterniond()),
+                HINGE, firstBoxBody, secondBoxBody, Pose(Vector3d(-0.5, -.5, -0.5), Quaterniond()),
                 Pose(Vector3d(0.5, -1.5, 0.5), Quaterniond())
             )
 
@@ -110,5 +116,27 @@ class PhysicsWorldChainTest : PhysicsWorld() {
         joints.add(firstBoxToCeilingJoint)
         joints.add(firstBoxToSecondBoxJoint)
         joints.add(secondBoxToThirdBoxJoint)
+
+        for (i in 1..5) {
+            val secondBoxPose = Pose(Vector3d(-1.5, 8.5 + i * 5, 0.0), Quaterniond())
+            val secondBoxBody = Body(secondBoxPose)
+            secondBoxBody.setBox(boxSize)
+            secondBoxBody.shape = biggerVoxelShape
+
+            val thirdBoxPose = Pose(Vector3d(1.5, 8.5 + i * 5, 0.0), Quaterniond())
+            val thirdBoxBody = Body(thirdBoxPose)
+            thirdBoxBody.setBox(boxSize)
+            thirdBoxBody.shape = biggerVoxelShape
+
+            val secondBoxToThirdBoxJoint =
+                Joint(
+                    HINGE, secondBoxBody, thirdBoxBody, Pose(Vector3d(.5, .5, .5), Quaterniond()),
+                    Pose(Vector3d(0.5, -1.5, 0.5), Quaterniond())
+                )
+
+            bodies.add(secondBoxBody)
+            bodies.add(thirdBoxBody)
+            joints.add(secondBoxToThirdBoxJoint)
+        }
     }
 }
