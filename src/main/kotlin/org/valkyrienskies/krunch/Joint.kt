@@ -18,27 +18,25 @@ class Joint(
     val body0: Body?,
     val body1: Body?,
     _localPose0: Pose,
-    _localPose1: Pose
+    _localPose1: Pose,
+    val compliance: Double = 0.0,
+    var rotDamping: Double = 0.0,
+    var posDamping: Double = 0.0,
+    val hasSwingLimits: Boolean = false,
+    val minSwingAngle: Double = -2.0 * Math.PI,
+    val maxSwingAngle: Double = 2.0 * Math.PI,
+    val swingLimitsCompliance: Double = 0.0,
+    val hasTwistLimits: Boolean = false,
+    val minTwistAngle: Double = -2.0 * Math.PI,
+    val maxTwistAngle: Double = 2.0 * Math.PI,
+    val twistLimitCompliance: Double = 0.0
 ) {
-
     val localPose0: Pose
     val localPose1: Pose
     val globalPose0: Pose
     val globalPose1: Pose
 
-    val compliance = 0.0
-    var rotDamping = 0.0
-    var posDamping = 0.0
-    val hasSwingLimits = false
-    val minSwingAngle = -2.0 * Math.PI
-    val maxSwingAngle = 2.0 * Math.PI
-    val swingLimitsCompliance = 0.0
-    val hasTwistLimits = false
-    val minTwistAngle = -2.0 * Math.PI
-    val maxTwistAngle = 2.0 * Math.PI
-    val twistLimitCompliance = 0.0
-
-    val positionConstraints: List<PositionConstraint>
+    private val positionConstraints: List<PositionConstraint>
 
     init {
         this.localPose0 = _localPose0.clone()
@@ -47,7 +45,6 @@ class Joint(
         this.globalPose1 = _localPose1.clone()
 
         val positionConstraintsMutable = ArrayList<PositionConstraint>()
-
         when (type) {
             FIXED -> positionConstraintsMutable.add(JointFixedOrientationConstraint(this))
             HINGE -> {
@@ -60,7 +57,6 @@ class Joint(
             }
         }
         positionConstraintsMutable.add(JointAttachmentConstraint(this))
-
         positionConstraints = positionConstraintsMutable
     }
 
@@ -135,22 +131,22 @@ class Joint(
                 val n = n0.add(n1, Vector3d())
                 n.normalize()
 
-                val a0 = getQuaternionAxis1(this.globalPose0.q)
-                val scale0 = -n.dot(a0)
-                a0.add(n.x * scale0, n.y * scale0, n.z * scale0)
-                a0.normalize()
+                val a = getQuaternionAxis1(this.globalPose0.q)
+                val scale0 = -n.dot(a)
+                a.add(n.x * scale0, n.y * scale0, n.z * scale0)
+                a.normalize()
 
-                val a1 = getQuaternionAxis1(this.globalPose1.q)
-                val scale1 = -n.dot(a1)
+                val b = getQuaternionAxis1(this.globalPose1.q)
+                val scale1 = -n.dot(b)
 
-                a1.add(n.x * scale1, n.y * scale1, n.z * scale1)
-                a1.normalize()
+                b.add(n.x * scale1, n.y * scale1, n.z * scale1)
+                b.normalize()
 
                 // handling gimbal lock problem
                 val maxCorr = if (n0.dot(n1) > -0.5) 2.0 * Math.PI else 1.0 * dt
 
                 limitAngle(
-                    this.body0, this.body1, n, a0, a1,
+                    this.body0, this.body1, n, a, b,
                     this.minTwistAngle, this.maxTwistAngle, this.twistLimitCompliance, dt, maxCorr
                 )
             }
@@ -200,5 +196,17 @@ class Joint(
                 this.globalPose0.p, this.globalPose1.p, true
             )
         }
+    }
+
+    fun getPositionConstraints(): List<PositionConstraint> = positionConstraints
+
+    companion object {
+        fun createJoint(
+            type: JointType,
+            body0: Body?,
+            body1: Body?,
+            _localPose0: Pose,
+            _localPose1: Pose
+        ): Joint = Joint(type, body0, body1, _localPose0, _localPose1)
     }
 }

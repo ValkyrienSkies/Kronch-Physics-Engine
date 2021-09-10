@@ -12,6 +12,7 @@ import org.valkyrienskies.krunch.JointType.SPHERICAL
 import org.valkyrienskies.krunch.PhysicsWorld
 import org.valkyrienskies.krunch.Pose
 import org.valkyrienskies.krunch.collision.shapes.TSDFVoxelShape
+import kotlin.math.PI
 import kotlin.math.abs
 
 class PhysicsWorldChainTest : PhysicsWorld() {
@@ -78,19 +79,19 @@ class PhysicsWorldChainTest : PhysicsWorld() {
 
         // region Create joins
         val firstBoxToCeilingJoint =
-            Joint(
+            Joint.createJoint(
                 SPHERICAL, null, firstBoxBody, Pose(Vector3d(0.0, 4.5, 0.0), Quaterniond()),
                 Pose(Vector3d(0.5, .5, 0.5), Quaterniond())
             )
 
         val firstBoxToSecondBoxJoint =
-            Joint(
-                HINGE, firstBoxBody, secondBoxBody, Pose(Vector3d(-0.5, -.5, -0.5), Quaterniond()),
+            Joint.createJoint(
+                SPHERICAL, firstBoxBody, secondBoxBody, Pose(Vector3d(-0.5, -.5, -0.5), Quaterniond()),
                 Pose(Vector3d(0.5, -1.5, 0.5), Quaterniond())
             )
 
         val secondBoxToThirdBoxJoint =
-            Joint(
+            Joint.createJoint(
                 HINGE, secondBoxBody, thirdBoxBody, Pose(Vector3d(.5, .5, .5), Quaterniond()),
                 Pose(Vector3d(0.5, -1.5, 0.5), Quaterniond())
             )
@@ -132,7 +133,8 @@ class PhysicsWorldChainTest : PhysicsWorld() {
             val secondBoxToThirdBoxJoint =
                 Joint(
                     HINGE, secondBoxBody, thirdBoxBody, Pose(Vector3d(.5, .5, .5), Quaterniond()),
-                    Pose(Vector3d(0.5, -1.5, 0.5), Quaterniond())
+                    Pose(Vector3d(0.5, -1.5, 0.5), Quaterniond()), hasSwingLimits = true, minSwingAngle = -PI / 4.0,
+                    maxSwingAngle = PI / 4.0, swingLimitsCompliance = 1e-4
                 )
 
             bodies.add(secondBoxBody)

@@ -215,7 +215,7 @@ fun simulate(
     val collisionConstraints = createCollisionConstraints(collisions, settings)
     val jointPositionConstraints = ArrayList<PositionConstraint>()
     joints.forEach {
-        jointPositionConstraints.addAll(it.positionConstraints)
+        jointPositionConstraints.addAll(it.getPositionConstraints())
     }
 
     val restitutionConstraints = createRestitutionConstraints(collisionConstraints, settings)
