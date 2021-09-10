@@ -251,6 +251,9 @@ fun simulate(
         // Step 4.5, add dynamic friction using a Gauss-Seidel, regardless of [solver].
         // (This gives us unconditional stability)
         applyDynamicFriction(collisionConstraints, dt, settings.dynamicFrictionCompliance)
+
+        // Add joint damping
+        joints.forEach { it.solveVel(dt) }
     }
 }
 
