@@ -4,6 +4,13 @@ import org.joml.Vector3d
 import org.valkyrienskies.krunch.JointType.FIXED
 import org.valkyrienskies.krunch.JointType.HINGE
 import org.valkyrienskies.krunch.JointType.SPHERICAL
+import org.valkyrienskies.krunch.constraints.JointAttachmentConstraint
+import org.valkyrienskies.krunch.constraints.JointFixedOrientationConstraint
+import org.valkyrienskies.krunch.constraints.JointHingeOrientationConstraint
+import org.valkyrienskies.krunch.constraints.JointHingeSwingLimitConstraint
+import org.valkyrienskies.krunch.constraints.JointSphericalSwingLimitConstraint
+import org.valkyrienskies.krunch.constraints.JointSphericalTwistLimitConstraint
+import org.valkyrienskies.krunch.constraints.PositionConstraint
 import kotlin.math.min
 
 class Joint(
@@ -31,11 +38,30 @@ class Joint(
     val maxTwistAngle = 2.0 * Math.PI
     val twistLimitCompliance = 0.0
 
+    val positionConstraints: List<PositionConstraint>
+
     init {
         this.localPose0 = _localPose0.clone()
         this.localPose1 = _localPose1.clone()
         this.globalPose0 = _localPose0.clone()
         this.globalPose1 = _localPose1.clone()
+
+        val positionConstraintsMutable = ArrayList<PositionConstraint>()
+
+        when (type) {
+            FIXED -> positionConstraintsMutable.add(JointFixedOrientationConstraint(this))
+            HINGE -> {
+                positionConstraintsMutable.add(JointHingeOrientationConstraint(this))
+                if (hasSwingLimits) positionConstraintsMutable.add(JointHingeSwingLimitConstraint(this))
+            }
+            SPHERICAL -> {
+                if (hasSwingLimits) positionConstraintsMutable.add(JointSphericalSwingLimitConstraint(this))
+                if (hasTwistLimits) positionConstraintsMutable.add(JointSphericalTwistLimitConstraint(this))
+            }
+        }
+        positionConstraintsMutable.add(JointAttachmentConstraint(this))
+
+        positionConstraints = positionConstraintsMutable
     }
 
     fun updateGlobalPoses() {

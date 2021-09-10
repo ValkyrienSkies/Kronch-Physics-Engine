@@ -13,14 +13,6 @@ interface Constraint {
     fun reset()
 
     /**
-     * Returns true iff this constraint should be applied this sub-step, false otherwise.
-     *
-     * For example, a collision constraint should only be applied for a sub-step if the penetration distance is > 0,
-     * otherwise it should be ignored.
-     */
-    fun shouldApplyThisSubStep(): Boolean
-
-    /**
      * Returns the impulses to be applied to each body involved in this constraint.
      */
     fun computeUpdateImpulses(

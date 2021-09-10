@@ -8,7 +8,9 @@ import org.valkyrienskies.krunch.SolverType.JACOBI
 import org.valkyrienskies.krunch.collision.CollisionResult
 import org.valkyrienskies.krunch.collision.colliders.ColliderResolver
 import org.valkyrienskies.krunch.constraints.CollisionConstraint
+import org.valkyrienskies.krunch.constraints.PositionConstraint
 import org.valkyrienskies.krunch.constraints.RestitutionConstraint
+import org.valkyrienskies.krunch.constraints.VelocityConstraint
 import org.valkyrienskies.krunch.solver.GaussSeidelSolver
 import org.valkyrienskies.krunch.solver.JacobiSolver
 import org.valkyrienskies.krunch.solver.Solver
@@ -206,7 +208,15 @@ fun simulate(
     // Only solve collision detection once per time step
     val collisions = generateCollisions(bodies, timeStep, speculativeContactDistance = 0.05)
     val collisionConstraints = createCollisionConstraints(collisions, settings)
+    val jointPositionConstraints = ArrayList<PositionConstraint>()
+    joints.forEach {
+        jointPositionConstraints.addAll(it.positionConstraints)
+    }
+
     val restitutionConstraints = createRestitutionConstraints(collisionConstraints, settings)
+
+    val positionConstraints: List<PositionConstraint> = collisionConstraints + jointPositionConstraints
+    val velocityConstraints: List<VelocityConstraint> = restitutionConstraints
 
     for (step in 0 until settings.subSteps) {
         // Step 1, integrate velocity into position
@@ -218,10 +228,7 @@ fun simulate(
         // for (joint in joints)
         //     joint.solvePos(dt)
 
-        collisionConstraints.forEach {
-            it.reset()
-        }
-        restitutionConstraints.forEach {
+        positionConstraints.forEach {
             it.reset()
         }
 
@@ -230,19 +237,24 @@ fun simulate(
             JACOBI -> JacobiSolver()
         }
 
-        solver.solvePositionConstraints(collisionConstraints, settings.iterations, dt)
+        solver.solvePositionConstraints(positionConstraints, settings.iterations, dt)
+
+        // applyStaticFriction(collisionConstraints, dt, settings.dynamicFrictionCompliance)
 
         // Step 3, compute new velocities given the positional updates
         for (body in bodies)
             if (!body.isStatic) body.update(dt)
 
         // Step 3.5, update velocities to apply friction and collision restitution
+        velocityConstraints.forEach {
+            it.reset()
+        }
 
         // For now just test the Jacobi solver for restitution
-        solver.solveVelocityConstraints(restitutionConstraints, settings.iterations, dt)
+        solver.solveVelocityConstraints(velocityConstraints, settings.iterations, dt)
 
         // Only run this once
-        // applyDynamicFriction(collisions, dt, settings.dynamicFrictionCompliance)
+        // applyDynamicFriction(collisionConstraints, dt, settings.dynamicFrictionCompliance)
 
         // Step 4, solve velocity constraints
         // for (joint in joints)
@@ -250,205 +262,105 @@ fun simulate(
     }
 }
 
-private fun applySubStepToCollisions(collisions: List<CollisionData>) {
-    collisions.forEach { collisionData ->
-        collisionData.collisionResult.collisionPoints.forEach { collisionContact ->
-            collisionContact.skipThisSubStep = false
-            collisionContact.normalThisSubStep = Vector3d(collisionContact.originalCollisionNormal)
-            collisionContact.usedThisSubStep = false
-            collisionContact.normalLambdaThisSubStep = 0.0
-            collisionContact.tangentialLambdaThisSubStep = 0.0
-        }
-    }
-}
-
-private fun correctRestitution(
-    collisions: List<CollisionConstraint>, dt: Double, compliance: Double = 0.0, dryRun: Boolean = false
-) {
+private fun applyDynamicFriction(collisions: List<CollisionConstraint>, dt: Double, compliance: Double = 0.0) {
     collisions.forEach { collision ->
-        if (collision.getForceBetweenContacts() != 0.0) {
-            val body0 = collision.body0
-            val body1 = collision.body1
-            val positionInFirstBody = collision.body0ContactPosInBody0Coordinates
-            val positionInSecondBody = collision.body1ContactPosInBody1Coordinates
-            val normalThisSubStep = collision.contactNormalInGlobalCoordinates
-
+        with(collision) {
+            if (lambda == 0.0) {
+                // If this contact wasn't used, then it didn't effect velocity so we don't need to correct anything
+                return@with
+            }
             // For each collision contact, set the relative velocity of the collision points on both bodies to 0
-            val body0CollisionPosInGlobal = body0.pose.transform(Vector3d(positionInFirstBody))
-            val body1CollisionPosInGlobal = body1.pose.transform(Vector3d(positionInSecondBody))
+            val body0CollisionPosInGlobal = body0.pose.transform(Vector3d(body0ContactPosInBody0Coordinates))
+            val body1CollisionPosInGlobal = body1.pose.transform(Vector3d(body1ContactPosInBody1Coordinates))
 
             // Compute the current velocity along normal
             val body0VelocityAtPoint = body0.getVelocityAt(body0CollisionPosInGlobal)
             val body1VelocityAtPoint = body1.getVelocityAt(body1CollisionPosInGlobal)
-
             val relativeVelocity = body0VelocityAtPoint.sub(body1VelocityAtPoint, Vector3d())
-            val relativeVelocityAlongNormal = normalThisSubStep.dot(relativeVelocity) // v_n
+            val relativeVelocityAlongNormal = contactNormalInGlobalCoordinates.dot(relativeVelocity)
 
-            // Compute the previous velocity along normal
-            val relativeVelocityAlongNormalPrev =
-                if (abs(relativeVelocityAlongNormal) > 2 * 10.0 * dt) {
-                    val body0VelocityAtPointPrev = body0.getPrevVelocityAt(body0CollisionPosInGlobal)
-                    val body1VelocityAtPointPrev = body1.getPrevVelocityAt(body1CollisionPosInGlobal)
-                    val relativeVelocityPrev =
-                        body0VelocityAtPointPrev.sub(body1VelocityAtPointPrev, Vector3d())
-                    normalThisSubStep.dot(relativeVelocityPrev)
-                } else {
-                    0.0
-                }
+            run applyDynamicFriction2@{
+                val tangentialVelocity =
+                    Vector3d(relativeVelocity).fma(-relativeVelocityAlongNormal, contactNormalInGlobalCoordinates)
 
-            // Take the average of the coefficients of restitution of both bodies
-            val coefficientOfRestitution =
-                (body0.coefficientOfRestitution + body1.coefficientOfRestitution) / 2.0
+                // v_t
+                val tangentialVelocityLength = tangentialVelocity.length()
 
-            // [deltaVelocity] serves 2 purposes:
-            // The first is to remove velocity added by [collision]
-            // The second is to apply the coefficient of restitution to [collision]
-            val deltaVelocity = normalThisSubStep.mul(
-                -relativeVelocityAlongNormal +
-                    min(-coefficientOfRestitution * relativeVelocityAlongNormalPrev, 0.0),
-                Vector3d()
-            )
+                // Avoid dividing by 0
+                if (tangentialVelocityLength < 1e-12) return@applyDynamicFriction2
 
-            if (!dryRun) {
+                // u_d
+                val dynamicFrictionCoefficient =
+                    (body0.dynamicFrictionCoefficient + body1.dynamicFrictionCoefficient) / 2.0
+
+                // f_d
+                val normalForce = abs(lambda) / (dt * dt)
+
+                val friction =
+                    tangentialVelocity.mul(
+                        -min(
+                            dt * dynamicFrictionCoefficient * normalForce, tangentialVelocityLength
+                        ) / tangentialVelocityLength
+                    )
+
                 applyBodyPairCorrection(
-                    body0, body1, deltaVelocity, compliance, dt, body0CollisionPosInGlobal,
+                    body0, body1, friction, compliance, dt, body0CollisionPosInGlobal,
                     body1CollisionPosInGlobal,
                     true
                 )
-            } else {
-                println(
-                    "$body0 $body1 $deltaVelocity $compliance $dt $body0CollisionPosInGlobal $body1CollisionPosInGlobal"
+            }
+        }
+    }
+}
+
+/**
+ * We solve this after all the other position constraints have solved because these calculations require the collision
+ * lambda.
+ */
+private fun applyStaticFriction(collisions: List<CollisionConstraint>, dt: Double, compliance: Double = 0.0) {
+    collisions.forEach { collision ->
+        with(collision) {
+            if (lambda == 0.0) {
+                // If this contact wasn't used, then it didn't effect velocity so we don't need to correct anything
+                return@with
+            }
+
+            val body0PointPosInGlobal = body0.pose.transform(Vector3d(body0ContactPosInBody0Coordinates))
+            val body1PointPosInGlobal = body1.pose.transform(Vector3d(body1ContactPosInBody1Coordinates))
+
+            // Next, apply static friction
+            val staticFrictionCoefficient =
+                (body0.staticFrictionCoefficient + body1.staticFrictionCoefficient) / 2.0
+
+            val prevBody0PointPosInGlobal = body0.prevPose.transform(Vector3d(body0ContactPosInBody0Coordinates))
+            val prevBody1PointPosInGlobal = body1.prevPose.transform(Vector3d(body1ContactPosInBody1Coordinates))
+
+            val relativeMotionOfContactPoints =
+                Vector3d(body0PointPosInGlobal).sub(prevBody0PointPosInGlobal).sub(body1PointPosInGlobal)
+                    .add(prevBody1PointPosInGlobal)
+
+            val tangentialRelativeMotionOfContactPoints =
+                Vector3d(relativeMotionOfContactPoints).fma(
+                    -relativeMotionOfContactPoints.dot(contactNormalInGlobalCoordinates),
+                    contactNormalInGlobalCoordinates
                 )
-            }
-        }
-    }
-}
 
-private fun applyDynamicFriction(collisions: List<CollisionData>, dt: Double, compliance: Double = 0.0) {
-    collisions.forEach { collision ->
-        with(collision) {
-            collisionResult.collisionPoints.forEach { collisionContact ->
-                with(collisionContact) collisionContact@{
-                    if (!usedThisSubStep) {
-                        // If this contact wasn't used, then it didn't effect velocity so we don't need to correct anything
-                        return@collisionContact
-                    }
-                    // For each collision contact, set the relative velocity of the collision points on both bodies to 0
-                    val body0CollisionPosInGlobal = body0.pose.transform(Vector3d(positionInFirstBody))
-                    val body1CollisionPosInGlobal = body1.pose.transform(Vector3d(positionInSecondBody))
+            tangentialRelativeMotionOfContactPoints.mul(-1.0)
 
-                    // Compute the current velocity along normal
-                    val body0VelocityAtPoint = body0.getVelocityAt(body0CollisionPosInGlobal)
-                    val body1VelocityAtPoint = body1.getVelocityAt(body1CollisionPosInGlobal)
-                    val relativeVelocity = body0VelocityAtPoint.sub(body1VelocityAtPoint, Vector3d())
-                    val relativeVelocityAlongNormal = normalThisSubStep.dot(relativeVelocity)
+            val maxStaticFrictionLambda = abs(lambda * staticFrictionCoefficient)
 
-                    run applyDynamicFriction2@{
-                        val tangentialVelocity =
-                            Vector3d(relativeVelocity).fma(-relativeVelocityAlongNormal, normalThisSubStep)
-
-                        // v_t
-                        val tangentialVelocityLength = tangentialVelocity.length()
-
-                        // Avoid dividing by 0
-                        if (tangentialVelocityLength < 1e-12) return@applyDynamicFriction2
-
-                        // u_d
-                        val dynamicFrictionCoefficient =
-                            (body0.dynamicFrictionCoefficient + body1.dynamicFrictionCoefficient) / 2.0
-
-                        // f_d
-                        val normalForce = abs(collisionContact.normalLambdaThisSubStep) / (dt * dt)
-
-                        val friction =
-                            tangentialVelocity.mul(
-                                -min(
-                                    dt * dynamicFrictionCoefficient * normalForce, tangentialVelocityLength
-                                ) / tangentialVelocityLength
-                            )
-
-                        applyBodyPairCorrection(
-                            body0, body1, friction, compliance, dt, body0CollisionPosInGlobal,
-                            body1CollisionPosInGlobal,
-                            true
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-private fun resolveCollisions(collisions: List<CollisionData>, dt: Double, compliance: Double = 0.0) {
-    collisions.forEach { collision ->
-        with(collision) {
-            collisionResult.collisionPoints.forEach { collisionContact ->
-                with(collisionContact) collisionContact@{
-                    // Potentially skip this collision
-                    if (collisionContact.skipThisSubStep) return@collisionContact
-
-                    if (collisionContact.normalThisSubStep.lengthSquared() < .99) throw IllegalStateException(
-                        "The collision normal " + collisionContact.normalThisSubStep + " is not normal!"
-                    )
-
-                    val body0PointPosInGlobal = body0.pose.transform(Vector3d(positionInFirstBody))
-                    val body1PointPosInGlobal = body1.pose.transform(Vector3d(positionInSecondBody))
-
-                    val positionDifference = body0PointPosInGlobal.sub(body1PointPosInGlobal, Vector3d())
-                    val d = normalThisSubStep.dot(positionDifference)
-
-                    if (d < PAIR_CORRECTION_MIN_LENGTH) {
-                        // No longer colliding, skip this contact
-                        // Technically any d value > 0 is valid, but don't allow values that are too small (< PAIR_CORRECTION_MIN_LENGTH) to avoid floating point errors
-                        return@collisionContact
-                    }
-
-                    // This part doesn't make sense to me now, but it fixes a lot of problems to make [corr] negative
-                    val corr = normalThisSubStep.mul(-d, Vector3d())
-
-                    // Compliance is set to [collisionCompliance] to dampen collision forces.
-                    normalLambdaThisSubStep = applyBodyPairCorrection(
-                        body0, body1, corr, compliance, dt,
-                        body0PointPosInGlobal, body1PointPosInGlobal, false, normalLambdaThisSubStep
-                    )
-
-                    /*
-                    // Next, apply static friction
-                    val staticFrictionCoefficient =
-                        (body0.staticFrictionCoefficient + body1.staticFrictionCoefficient) / 2.0
-
-                    val prevBody0PointPosInGlobal = body0.prevPose.transform(Vector3d(positionInFirstBody))
-                    val prevBody1PointPosInGlobal = body1.prevPose.transform(Vector3d(positionInSecondBody))
-
-                    val relativeMotionOfContactPoints =
-                        Vector3d(body0PointPosInGlobal).sub(prevBody0PointPosInGlobal).sub(body1PointPosInGlobal)
-                            .add(prevBody1PointPosInGlobal)
-
-                    val tangentialRelativeMotionOfContactPoints =
-                        Vector3d(relativeMotionOfContactPoints).fma(
-                            -relativeMotionOfContactPoints.dot(normalThisSubStep), normalThisSubStep
-                        )
-
-                    tangentialRelativeMotionOfContactPoints.mul(-1.0)
-
-                    val maxStaticFrictionLambda = abs(normalLambdaThisSubStep * staticFrictionCoefficient)
-
-                    tangentialLambdaThisSubStep = applyBodyPairCorrection(
-                        body0 = body0,
-                        body1 = body1,
-                        corr = tangentialRelativeMotionOfContactPoints,
-                        compliance = compliance,
-                        dt = dt,
-                        pos0 = body0PointPosInGlobal,
-                        pos1 = body1PointPosInGlobal,
-                        velocityLevel = false,
-                        prevLambda = 0.0,
-                        maxLambda = maxStaticFrictionLambda
-                    )
-                    */
-                    usedThisSubStep = true
-                }
-            }
+            val tangentialLambdaThisSubStep = applyBodyPairCorrection(
+                body0 = body0,
+                body1 = body1,
+                corr = tangentialRelativeMotionOfContactPoints,
+                compliance = compliance,
+                dt = dt,
+                pos0 = body0PointPosInGlobal,
+                pos1 = body1PointPosInGlobal,
+                velocityLevel = false,
+                prevLambda = 0.0,
+                maxLambda = maxStaticFrictionLambda
+            )
         }
     }
 }

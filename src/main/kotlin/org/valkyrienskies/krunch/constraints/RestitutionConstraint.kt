@@ -15,7 +15,7 @@ class RestitutionConstraint(
     private val contactNormalInGlobalCoordinates: Vector3dc,
     private val restitutionCompliance: Double,
     private val collisionConstraint: CollisionConstraint
-) : Constraint {
+) : VelocityConstraint {
 
     private var lambda: Double = 0.0
     private var prevLambda: Double = 0.0
@@ -25,11 +25,6 @@ class RestitutionConstraint(
             body: Body, bodyLinearImpulse: Vector3dc?, bodyAngularImpulse: Vector3dc?
         ) -> Unit
     ) {
-        var body0LinearImpulse: Vector3dc? = null
-        var body0AngularImpulse: Vector3dc? = null
-        var body1LinearImpulse: Vector3dc? = null
-        var body1AngularImpulse: Vector3dc? = null
-
         val body0PointPosInGlobal = body0.pose.transform(Vector3d(body0ContactPosInBody0Coordinates))
         val body1PointPosInGlobal = body1.pose.transform(Vector3d(body1ContactPosInBody1Coordinates))
 
@@ -39,19 +34,14 @@ class RestitutionConstraint(
         val corr = contactNormalInGlobalCoordinates.mul(-deltaLambda, Vector3d())
 
         body0.getCorrectionImpulses(corr, body0PointPosInGlobal) { linearImpulse, angularImpulse ->
-            body0LinearImpulse = linearImpulse
-            body0AngularImpulse = angularImpulse
+            function(body0, linearImpulse, angularImpulse)
         }
 
         corr.mul(-1.0)
 
         body1.getCorrectionImpulses(corr, body1PointPosInGlobal) { linearImpulse, angularImpulse ->
-            body1LinearImpulse = linearImpulse
-            body1AngularImpulse = angularImpulse
+            function(body1, linearImpulse, angularImpulse)
         }
-
-        function(body0, body0LinearImpulse, body0AngularImpulse)
-        function(body1, body1LinearImpulse, body1AngularImpulse)
     }
 
     override fun iterate(dt: Double, weight: Double) {
@@ -113,9 +103,5 @@ class RestitutionConstraint(
     override fun reset() {
         prevLambda = 0.0
         lambda = 0.0
-    }
-
-    override fun shouldApplyThisSubStep(): Boolean {
-        TODO("Not yet implemented")
     }
 }

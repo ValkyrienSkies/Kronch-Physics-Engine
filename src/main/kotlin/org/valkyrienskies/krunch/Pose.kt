@@ -36,4 +36,8 @@ class Pose(
         q.normalize()
         return this
     }
+
+    companion object {
+        fun copyPose(pose: Posec): Pose = Pose(Vector3d(pose.p), Quaterniond(pose.q))
+    }
 }
