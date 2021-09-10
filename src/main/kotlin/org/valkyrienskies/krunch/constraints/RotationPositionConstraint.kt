@@ -11,11 +11,18 @@ abstract class RotationPositionConstraint(
     private var lambda: Double = 0.0
     private var prevLambda: Double = 0.0
     private val normal = Vector3d()
+    private var needsNormal = true
 
     override fun iterate(dt: Double, weight: Double) {
-        if (normal.lengthSquared() == 0.0) return
+        if (normal.lengthSquared() == 0.0 && !needsNormal) return
 
         val omega = computeRotationCorrection()
+
+        if (needsNormal) {
+            needsNormal = false
+            if (omega.lengthSquared() < 1e-24) return
+            normal.set(omega).normalize()
+        }
 
         // Try to set [dotProduct] to 0
         val dotProduct = omega.dot(normal)
@@ -36,15 +43,8 @@ abstract class RotationPositionConstraint(
         lambda = 0.0
         prevLambda = 0.0
 
-        val rotationCorrection = computeRotationCorrection()
-
-        normal.set(rotationCorrection)
-
-        if (normal.lengthSquared() > 1e-24) {
-            normal.normalize()
-        } else {
-            normal.zero()
-        }
+        normal.zero()
+        needsNormal = true
     }
 
     abstract fun computeRotationCorrection(): Vector3dc
