@@ -13,9 +13,4 @@ interface CollisionPairc {
     val positionInFirstBody: Vector3dc
     val positionInSecondBody: Vector3dc
     val originalCollisionNormal: Vector3dc
-    val skipThisSubStep: Boolean
-    val normalThisSubStep: Vector3dc
-    val usedThisSubStep: Boolean
-    val normalLambdaThisSubStep: Double
-    val tangentialLambdaThisSubStep: Double
 }
