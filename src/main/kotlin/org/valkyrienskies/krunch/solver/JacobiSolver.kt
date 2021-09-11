@@ -6,14 +6,11 @@ import org.valkyrienskies.krunch.constraints.Constraint
 
 class JacobiSolver : Solver {
 
-    // See https://en.wikipedia.org/wiki/Jacobi_method#Weighted_Jacobi_method
-    private val positionConstraintWeight = 1.0 / 8.0
-    private val velocityConstraintWeight = 1.0 / 8.0
-
     override fun solvePositionConstraints(constraints: List<Constraint>, iterations: Int, dt: Double) {
         for (i in 1..iterations) {
+            val weight = i.toDouble() / (i + 2)
             constraints.forEach {
-                it.iterate(dt, positionConstraintWeight)
+                it.iterate(dt, weight)
             }
             val linearImpulsesToAddMap = HashMap<Body, Vector3d>()
             val angularImpulsesToAddMap = HashMap<Body, Vector3d>()
@@ -41,8 +38,9 @@ class JacobiSolver : Solver {
 
     override fun solveVelocityConstraints(constraints: List<Constraint>, iterations: Int, dt: Double) {
         for (i in 1..iterations) {
+            val weight = i.toDouble() / (i + 2)
             constraints.forEach {
-                it.iterate(dt, velocityConstraintWeight)
+                it.iterate(dt, weight)
             }
             val linearImpulsesToAddMap = HashMap<Body, Vector3d>()
             val angularImpulsesToAddMap = HashMap<Body, Vector3d>()

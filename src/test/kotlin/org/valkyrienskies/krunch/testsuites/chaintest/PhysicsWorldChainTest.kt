@@ -81,8 +81,8 @@ class PhysicsWorldChainTest : PhysicsWorld() {
         val firstBoxToCeilingJoint =
             Joint(
                 SPHERICAL, null, firstBoxBody, Pose(Vector3d(0.0, 4.5, 0.0), Quaterniond()),
-                Pose(Vector3d(0.5, .5, 0.5), Quaterniond()), hasSwingLimits = true, minSwingAngle = -PI / 4,
-                maxSwingAngle = PI / 4, swingLimitsCompliance = 1e-4, hasTwistLimits = true, minTwistAngle = -.1,
+                Pose(Vector3d(0.5, .5, 0.5), Quaterniond()), hasSwingLimits = false, minSwingAngle = -PI / 4,
+                maxSwingAngle = PI / 4, swingLimitsCompliance = 1e-4, hasTwistLimits = false, minTwistAngle = -.1,
                 maxTwistAngle = .1
             )
 
@@ -135,7 +135,7 @@ class PhysicsWorldChainTest : PhysicsWorld() {
             val secondBoxToThirdBoxJoint =
                 Joint(
                     HINGE, secondBoxBody, thirdBoxBody, Pose(Vector3d(.5, .5, .5), Quaterniond()),
-                    Pose(Vector3d(0.5, -1.5, 0.5), Quaterniond()), hasSwingLimits = true, minSwingAngle = PI / 4.0,
+                    Pose(Vector3d(0.5, -1.5, 0.5), Quaterniond()), hasSwingLimits = false, minSwingAngle = PI / 4.0,
                     maxSwingAngle = PI / 2.0, swingLimitsCompliance = 1e-4
                 )
 

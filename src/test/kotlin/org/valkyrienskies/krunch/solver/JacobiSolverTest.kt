@@ -15,7 +15,7 @@ internal class JacobiSolverTest {
     @Test
     fun testRestitutionCorrectionConvergence() {
         val settings = KrunchPhysicsWorldSettings()
-        settings.iterations = 20
+        settings.iterations = 2
         settings.solverType = JACOBI
 
         val dt = 8.333333333333333E-4

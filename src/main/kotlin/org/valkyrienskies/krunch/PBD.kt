@@ -1,10 +1,10 @@
 package org.valkyrienskies.krunch
 
-import org.joml.Quaterniond
 import org.joml.Vector3d
 import org.joml.Vector3dc
 import org.valkyrienskies.krunch.SolverType.GAUSS_SEIDEL
 import org.valkyrienskies.krunch.SolverType.JACOBI
+import org.valkyrienskies.krunch.collision.CollisionPair
 import org.valkyrienskies.krunch.collision.CollisionResult
 import org.valkyrienskies.krunch.collision.colliders.ColliderResolver
 import org.valkyrienskies.krunch.constraints.CollisionConstraint
@@ -15,7 +15,6 @@ import org.valkyrienskies.krunch.solver.GaussSeidelSolver
 import org.valkyrienskies.krunch.solver.JacobiSolver
 import org.valkyrienskies.krunch.solver.Solver
 import kotlin.math.abs
-import kotlin.math.asin
 import kotlin.math.min
 
 // pretty much one-for-one port of https://github.com/matthias-research/pages/blob/master/challenges/PBD.js
@@ -130,46 +129,29 @@ fun applyBodyPairCorrection(
     return newLambda
 }
 
-fun limitAngle(
-    body0: Body?, body1: Body?, n: Vector3d, a: Vector3d, b: Vector3d, minAngle: Double, maxAngle: Double,
-    compliance: Double, dt: Double, maxCorr: Double = Math.PI
-) {
-    // the key function to handle all angular joint limits
-    val c = a.cross(b, Vector3d())
-
-    var phi = asin(c.dot(n))
-    if (a.dot(b) < 0.0)
-        phi = Math.PI - phi
-
-    if (phi > Math.PI)
-        phi -= 2.0 * Math.PI
-    if (phi < -Math.PI)
-        phi += 2.0 * Math.PI
-
-    if (phi < minAngle || phi > maxAngle) {
-        phi = minAngle.coerceIn(phi, maxAngle)
-
-        val q = Quaterniond()
-        q.setAngleAxis(phi, n)
-
-        val omega = Vector3d(a)
-        omega.rotate(q)
-        omega.cross(b)
-
-        phi = omega.length()
-        if (phi > maxCorr)
-            omega.mul(maxCorr / phi)
-
-        applyBodyPairCorrection(body0, body1, omega, compliance, dt)
-    }
-}
-
 private fun createCollisionConstraints(
     collisionData: List<CollisionData>, settings: KrunchPhysicsWorldSettingsc
 ): List<CollisionConstraint> {
     val collisionConstraints = ArrayList<CollisionConstraint>()
     collisionData.forEach { data ->
-        data.collisionResult.collisionPoints.forEach { collisionPair ->
+        val deepestPoints = ArrayList<Pair<CollisionPair, Double>>()
+
+        data.collisionResult.collisionPoints.forEach {
+            val body0PointPosInGlobal = data.body0.pose.transform(Vector3d(it.positionInFirstBody))
+            val body1PointPosInGlobal = data.body1.pose.transform(Vector3d(it.positionInSecondBody))
+
+            val positionDifference = body0PointPosInGlobal.sub(body1PointPosInGlobal, Vector3d())
+            val d = it.originalCollisionNormal.dot(positionDifference)
+
+            deepestPoints.add(Pair(it, d))
+        }
+
+        // Only use the deepest collision points
+        deepestPoints.sortBy { -it.second }
+        while (deepestPoints.size > settings.maxCollisionPoints) deepestPoints.removeLast()
+
+        deepestPoints.forEach { collisionPairAndDepth ->
+            val collisionPair = collisionPairAndDepth.first
             val collisionConstraint = CollisionConstraint(
                 data.body0, collisionPair.positionInFirstBody, data.body1, collisionPair.positionInSecondBody,
                 collisionPair.originalCollisionNormal, settings.collisionCompliance
@@ -212,18 +194,17 @@ fun simulate(
 
     // Only solve collision detection once per time step
     val collisions = generateCollisions(bodies, timeStep, speculativeContactDistance = 0.05)
-    val collisionConstraints = createCollisionConstraints(collisions, settings)
     val jointPositionConstraints = ArrayList<PositionConstraint>()
     joints.forEach {
         jointPositionConstraints.addAll(it.getPositionConstraints())
     }
 
-    val restitutionConstraints = createRestitutionConstraints(collisionConstraints, settings)
-
-    val positionConstraints: List<PositionConstraint> = collisionConstraints + jointPositionConstraints
-    val velocityConstraints: List<VelocityConstraint> = restitutionConstraints
-
     for (step in 0 until settings.subSteps) {
+        val collisionConstraints = createCollisionConstraints(collisions, settings)
+        val restitutionConstraints = createRestitutionConstraints(collisionConstraints, settings)
+        val positionConstraints: List<PositionConstraint> = collisionConstraints + jointPositionConstraints
+        val velocityConstraints: List<VelocityConstraint> = restitutionConstraints
+
         // Step 1, integrate velocity into position
         for (body in bodies)
             if (!body.isStatic) body.integrate(dt, gravity)

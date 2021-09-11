@@ -13,4 +13,7 @@ interface KrunchPhysicsWorldSettingsc {
     // The distance at which a contact that isn't overlapping is included as a speculative contact
     val speculativeContactDistance: Double
     val solverType: SolverType
+
+    // The maximum number of collision points per collision pair used during a sub-step
+    val maxCollisionPoints: Int
 }
