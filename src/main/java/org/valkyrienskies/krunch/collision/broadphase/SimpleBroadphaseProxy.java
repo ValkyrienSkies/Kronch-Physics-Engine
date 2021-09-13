@@ -23,7 +23,7 @@
 
 package org.valkyrienskies.krunch.collision.broadphase;
 
-import javax.vecmath.Vector3f;
+import org.joml.Vector3f;
 
 /**
  * @author jezek2

@@ -25,9 +25,7 @@
 
 package org.valkyrienskies.krunch.collision.broadphase;
 
-import com.bulletphysics.util.ObjectArrayList;
-import cz.advel.stack.Stack;
-import javax.vecmath.Vector3f;
+import org.joml.Vector3f;
 
 /**
  * @author jezek2
@@ -174,8 +172,10 @@ public class DbvtBroadphase extends BroadphaseInterface {
         return list;
     }
 
-    public BroadphaseProxy createProxy(final Vector3f aabbMin, final Vector3f aabbMax, final BroadphaseNativeType shapeType,
-        final Object userPtr, final short collisionFilterGroup, final short collisionFilterMask, final Dispatcher dispatcher,
+    public BroadphaseProxy createProxy(final Vector3f aabbMin, final Vector3f aabbMax,
+        final BroadphaseNativeType shapeType,
+        final Object userPtr, final short collisionFilterGroup, final short collisionFilterMask,
+        final Dispatcher dispatcher,
         final Object multiSapProxy) {
         final DbvtProxy proxy = new DbvtProxy(userPtr, collisionFilterGroup, collisionFilterMask);
         DbvtAabbMm.FromMM(aabbMin, aabbMax, proxy.aabb);
@@ -198,7 +198,8 @@ public class DbvtBroadphase extends BroadphaseInterface {
         //btAlignedFree(proxy);
     }
 
-    public void setAabb(final BroadphaseProxy absproxy, final Vector3f aabbMin, final Vector3f aabbMax, final Dispatcher dispatcher) {
+    public void setAabb(final BroadphaseProxy absproxy, final Vector3f aabbMin, final Vector3f aabbMax,
+        final Dispatcher dispatcher) {
         final DbvtProxy proxy = (DbvtProxy) absproxy;
         final DbvtAabbMm aabb = DbvtAabbMm.FromMM(aabbMin, aabbMax, new DbvtAabbMm());
         if (proxy.stage == STAGECOUNT) {
@@ -208,12 +209,12 @@ public class DbvtBroadphase extends BroadphaseInterface {
         } else {
             // dynamic set:
             if (DbvtAabbMm.Intersect(proxy.leaf.volume, aabb)) {/* Moving				*/
-                final Vector3f delta = Stack.alloc(Vector3f.class);
+                final Vector3f delta = new Vector3f(); // Stack.alloc(Vector3f.class);
                 delta.add(aabbMin, aabbMax);
-                delta.scale(0.5f);
-                delta.sub(proxy.aabb.Center(Stack.alloc(Vector3f.class)));
+                delta.mul(0.5f);
+                delta.sub(proxy.aabb.Center(new Vector3f())); // Stack.alloc(Vector3f.class)));
                 //#ifdef DBVT_BP_MARGIN
-                delta.scale(predictedframes);
+                delta.mul(predictedframes);
                 sets[0].update(proxy.leaf, aabb, delta, DBVT_BP_MARGIN);
                 //#else
                 //m_sets[0].update(proxy->leaf,aabb,delta*m_predictedframes);

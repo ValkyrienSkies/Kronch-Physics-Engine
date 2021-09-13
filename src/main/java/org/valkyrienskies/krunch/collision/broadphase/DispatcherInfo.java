@@ -23,8 +23,6 @@
 
 package org.valkyrienskies.krunch.collision.broadphase;
 
-import com.bulletphysics.linearmath.IDebugDraw;
-
 /**
  * Current state of {@link Dispatcher}.
  *
@@ -37,7 +35,7 @@ public class DispatcherInfo {
     public DispatchFunc dispatchFunc;
     public float timeOfImpact;
     public boolean useContinuous;
-    public IDebugDraw debugDraw;
+    // public IDebugDraw debugDraw;
     public boolean enableSatConvex;
     public boolean enableSPU = true;
     public boolean useEpa = true;

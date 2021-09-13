@@ -23,8 +23,6 @@
 
 package org.valkyrienskies.krunch.collision.broadphase;
 
-import com.bulletphysics.collision.narrowphase.PersistentManifold;
-
 /**
  * Construction information for collision algorithms.
  *
@@ -33,7 +31,6 @@ import com.bulletphysics.collision.narrowphase.PersistentManifold;
 public class CollisionAlgorithmConstructionInfo {
 
     public Dispatcher dispatcher1;
-    public PersistentManifold manifold;
 
     //public int getDispatcherId();
 

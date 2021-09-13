@@ -23,8 +23,6 @@
 
 package org.valkyrienskies.krunch.collision.broadphase;
 
-import com.bulletphysics.util.ObjectArrayList;
-
 /**
  * OverlappingPairCache provides an interface for overlapping pair management (add, remove, storage), used by the {@link
  * BroadphaseInterface} broadphases.

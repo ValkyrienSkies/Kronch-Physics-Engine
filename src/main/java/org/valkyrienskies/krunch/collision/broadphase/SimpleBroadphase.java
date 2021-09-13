@@ -23,8 +23,7 @@
 
 package org.valkyrienskies.krunch.collision.broadphase;
 
-import com.bulletphysics.util.ObjectArrayList;
-import javax.vecmath.Vector3f;
+import org.joml.Vector3f;
 
 /**
  * SimpleBroadphase is just a unit-test for {@link AxisSweep3}, {@link AxisSweep3_32}, or {@link DbvtBroadphase}, so use
@@ -34,7 +33,7 @@ import javax.vecmath.Vector3f;
  */
 public class SimpleBroadphase extends BroadphaseInterface {
 
-    private final ObjectArrayList<SimpleBroadphaseProxy> handles = new ObjectArrayList<SimpleBroadphaseProxy>();
+    private final ObjectArrayList<SimpleBroadphaseProxy> handles = new ObjectArrayList<>();
     private int maxHandles;                        // max number of handles
     private OverlappingPairCache pairCache;
     private boolean ownsPairCache;
@@ -56,8 +55,10 @@ public class SimpleBroadphase extends BroadphaseInterface {
         }
     }
 
-    public BroadphaseProxy createProxy(final Vector3f aabbMin, final Vector3f aabbMax, final BroadphaseNativeType shapeType,
-        final Object userPtr, final short collisionFilterGroup, final short collisionFilterMask, final Dispatcher dispatcher,
+    public BroadphaseProxy createProxy(final Vector3f aabbMin, final Vector3f aabbMax,
+        final BroadphaseNativeType shapeType,
+        final Object userPtr, final short collisionFilterGroup, final short collisionFilterMask,
+        final Dispatcher dispatcher,
         final Object multiSapProxy) {
         assert (aabbMin.x <= aabbMax.x && aabbMin.y <= aabbMax.y && aabbMin.z <= aabbMax.z);
 
@@ -75,7 +76,8 @@ public class SimpleBroadphase extends BroadphaseInterface {
         pairCache.removeOverlappingPairsContainingProxy(proxyOrg, dispatcher);
     }
 
-    public void setAabb(final BroadphaseProxy proxy, final Vector3f aabbMin, final Vector3f aabbMax, final Dispatcher dispatcher) {
+    public void setAabb(final BroadphaseProxy proxy, final Vector3f aabbMin, final Vector3f aabbMax,
+        final Dispatcher dispatcher) {
         final SimpleBroadphaseProxy sbp = (SimpleBroadphaseProxy) proxy;
         sbp.min.set(aabbMin);
         sbp.max.set(aabbMax);
