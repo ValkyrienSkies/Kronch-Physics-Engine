@@ -26,6 +26,10 @@ class GriddedTSDF : IVoxelLayeredTSDF {
         TODO("Not yet implemented")
     }
 
+    override fun getVoxelCount(): Long {
+        TODO("Not yet implemented")
+    }
+
     private inline fun iterate3by3(function: (xOffset: Int, yOffset: Int, zOffset: Int) -> Unit) {
         for (xOffset in -1..1) {
             for (yOffset in -1..1) {

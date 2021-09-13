@@ -13,6 +13,7 @@ import org.valkyrienskies.krunch.collision.broadphase.BroadphasePair
 import org.valkyrienskies.krunch.collision.broadphase.DummyDispatcher
 import org.valkyrienskies.krunch.collision.broadphase.OverlapCallback
 import org.valkyrienskies.krunch.collision.colliders.ColliderResolver
+import org.valkyrienskies.krunch.collision.shapes.TSDFVoxelShape
 import org.valkyrienskies.krunch.constraints.CollisionConstraint
 import org.valkyrienskies.krunch.constraints.PositionConstraint
 import org.valkyrienskies.krunch.constraints.RestitutionConstraint
@@ -390,9 +391,22 @@ private fun generateCollisions(
             var body0: Body = pair.pProxy0.clientObject as Body
             var body1: Body = pair.pProxy1.clientObject as Body
             if (body0.shape.sortIndex < body1.shape.sortIndex) {
+                // Swap body0 and body1
                 val temp = body0
                 body0 = body1
                 body1 = temp
+            }
+            if (body0.shape is TSDFVoxelShape && body1.shape is TSDFVoxelShape) {
+                val body0VoxelCount = (body0.shape as TSDFVoxelShape).layeredTSDF.getVoxelCount()
+                val body1VoxelCount = (body1.shape as TSDFVoxelShape).layeredTSDF.getVoxelCount()
+                
+                // Use the smaller voxel shape as the point shell
+                if (body0VoxelCount < body1VoxelCount) {
+                    // Swap body0 and body1
+                    val temp = body0
+                    body0 = body1
+                    body1 = temp
+                }
             }
 
             if (body0.isStatic and body1.isStatic) {

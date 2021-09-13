@@ -28,4 +28,6 @@ interface IVoxelLayeredTSDF {
      * In other words, if the position is too far away from the surface, then we give up and return false.
      */
     fun getClosestPoint(posX: Double, posY: Double, posZ: Double, closestPointOutput: Vector3d): Boolean
+
+    fun getVoxelCount(): Long
 }
