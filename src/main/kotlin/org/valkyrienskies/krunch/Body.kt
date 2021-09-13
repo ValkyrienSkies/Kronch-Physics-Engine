@@ -4,6 +4,7 @@ import org.joml.Quaterniond
 import org.joml.Vector3d
 import org.joml.Vector3dc
 import org.joml.primitives.AABBd
+import org.valkyrienskies.krunch.collision.broadphase.BroadphaseProxy
 import org.valkyrienskies.krunch.collision.shapes.CollisionShape
 import org.valkyrienskies.krunch.collision.shapes.SphereShape
 import kotlin.math.abs
@@ -30,6 +31,8 @@ class Body(_pose: Pose) {
     var coefficientOfRestitution = .5
     var staticFrictionCoefficient = 1.0
     var dynamicFrictionCoefficient = .4
+
+    internal var broadPhaseProxy: BroadphaseProxy? = null
 
     fun setBox(size: Vector3d, density: Double = 1.0) {
         var mass = size.x * size.y * size.z * density

@@ -2,10 +2,16 @@ package org.valkyrienskies.krunch
 
 import org.joml.Vector3d
 import org.joml.Vector3dc
+import org.joml.Vector3f
 import org.valkyrienskies.krunch.SolverType.GAUSS_SEIDEL
 import org.valkyrienskies.krunch.SolverType.JACOBI
 import org.valkyrienskies.krunch.collision.CollisionPair
 import org.valkyrienskies.krunch.collision.CollisionResult
+import org.valkyrienskies.krunch.collision.broadphase.BroadphaseInterface
+import org.valkyrienskies.krunch.collision.broadphase.BroadphaseNativeType
+import org.valkyrienskies.krunch.collision.broadphase.BroadphasePair
+import org.valkyrienskies.krunch.collision.broadphase.DummyDispatcher
+import org.valkyrienskies.krunch.collision.broadphase.OverlapCallback
 import org.valkyrienskies.krunch.collision.colliders.ColliderResolver
 import org.valkyrienskies.krunch.constraints.CollisionConstraint
 import org.valkyrienskies.krunch.constraints.PositionConstraint
@@ -178,9 +184,12 @@ private fun createRestitutionConstraints(
     return restitutionConstraints
 }
 
+private val dummyDispatcher = DummyDispatcher()
+
 fun simulate(
     bodies: List<Body>,
     joints: List<Joint>,
+    broadPhase: BroadphaseInterface,
     gravity: Vector3dc,
     timeStep: Double,
     settings: KrunchPhysicsWorldSettingsc
@@ -192,8 +201,34 @@ fun simulate(
 
     val dt = timeStep / settings.subSteps
 
+    // Update body AABBs in the broad-phase
+    for (body in bodies) {
+        val aabbExpansion = 1.0
+        val aabb = body.getAABB().extend(body.vel).expand(aabbExpansion)
+        if (body.broadPhaseProxy != null) {
+            broadPhase.setAabb(
+                body.broadPhaseProxy,
+                Vector3f(aabb.minX.toFloat(), aabb.minY.toFloat(), aabb.minZ.toFloat()),
+                Vector3f(aabb.maxX.toFloat(), aabb.maxY.toFloat(), aabb.maxZ.toFloat()),
+                dummyDispatcher
+            )
+        } else {
+            body.broadPhaseProxy = broadPhase.createProxy(
+                Vector3f(aabb.minX.toFloat(), aabb.minY.toFloat(), aabb.minZ.toFloat()),
+                Vector3f(aabb.maxX.toFloat(), aabb.maxY.toFloat(), aabb.maxZ.toFloat()),
+                BroadphaseNativeType.BOX_SHAPE_PROXYTYPE,
+                body,
+                1,
+                1,
+                dummyDispatcher,
+                null
+            )
+        }
+    }
+    broadPhase.calculateOverlappingPairs(dummyDispatcher)
+
     // Only solve collision detection once per time step
-    val collisions = generateCollisions(bodies, timeStep, speculativeContactDistance = 0.05)
+    val collisions = generateCollisions(bodies, broadPhase, timeStep, speculativeContactDistance = 0.05)
     val jointPositionConstraints = ArrayList<PositionConstraint>()
     joints.forEach {
         jointPositionConstraints.addAll(it.getPositionConstraints())
@@ -344,33 +379,34 @@ private fun applyStaticFriction(collisions: List<CollisionConstraint>, dt: Doubl
 private data class CollisionData(val body0: Body, val body1: Body, val collisionResult: CollisionResult)
 
 private fun generateCollisions(
-    bodies: List<Body>, dt: Double, speculativeContactDistance: Double = 0.05
+    bodies: List<Body>,
+    broadPhase: BroadphaseInterface,
+    dt: Double,
+    speculativeContactDistance: Double = 0.05
 ): List<CollisionData> {
     val collisionDataList = ArrayList<CollisionData>()
-    for (i in bodies.indices) {
-        for (j in i + 1 until bodies.size) {
-            val body0: Body
-            val body1: Body
-            if (bodies[i].shape.sortIndex >= bodies[j].shape.sortIndex) {
-                body0 = bodies[i]
-                body1 = bodies[j]
-            } else {
-                body0 = bodies[j]
-                body1 = bodies[i]
+    val callback: OverlapCallback = object : OverlapCallback() {
+        override fun processOverlap(pair: BroadphasePair): Boolean {
+            var body0: Body = pair.pProxy0.clientObject as Body
+            var body1: Body = pair.pProxy1.clientObject as Body
+            if (body0.shape.sortIndex < body1.shape.sortIndex) {
+                val temp = body0
+                body0 = body1
+                body1 = temp
             }
 
             if (body0.isStatic and body1.isStatic) {
-                continue // Both bodies are static, don't bother to collide with both of them
+                return false // Both bodies are static, don't bother to collide with both of them
             }
 
-            val aabbExpansion = 1.0
+            // val aabbExpansion = 1.0
 
-            val body0AABB = body0.getAABB().extend(body0.vel).expand(aabbExpansion)
-            val body1AABB = body1.getAABB().extend(body1.vel).expand(aabbExpansion)
+            // val body0AABB = body0.getAABB().extend(body0.vel).expand(aabbExpansion)
+            // val body1AABB = body1.getAABB().extend(body1.vel).expand(aabbExpansion)
 
-            if (!body0AABB.intersectsAABB(body1AABB)) {
-                continue // AABB don't intersect, no collision
-            }
+            // if (!body0AABB.intersectsAABB(body1AABB)) {
+            //     return false // AABB don't intersect, no collision
+            // }
 
             val collisionResult =
                 ColliderResolver.computeCollisionBetweenShapes(
@@ -381,7 +417,9 @@ private fun generateCollisions(
             if (collisionResult != null && collisionResult.collisionPoints.isNotEmpty()) {
                 collisionDataList.add(CollisionData(body0, body1, collisionResult))
             }
+            return false
         }
     }
+    broadPhase.overlappingPairCache.processAllOverlappingPairs(callback, dummyDispatcher)
     return collisionDataList
 }
