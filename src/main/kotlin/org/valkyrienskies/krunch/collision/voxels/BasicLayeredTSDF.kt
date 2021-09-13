@@ -1,6 +1,7 @@
 package org.valkyrienskies.krunch.collision.voxels
 
 import org.joml.Vector3d
+import org.joml.primitives.AABBd
 import org.valkyrienskies.krunch.datastructures.Int3HashSet
 import kotlin.math.max
 import kotlin.math.min
@@ -12,12 +13,16 @@ import kotlin.math.roundToInt
 class BasicLayeredTSDF : IVoxelLayeredTSDF {
 
     private val voxelStorage = Int3HashSet()
+    private val aabbGenerator: VoxelShapeAABBGenerator = BasicVoxelShapeAABBGenerator()
 
     override fun setVoxel(posX: Int, posY: Int, posZ: Int, set: Boolean) {
-        if (set)
-            voxelStorage.add(posX, posY, posZ)
-        else
-            voxelStorage.remove(posX, posY, posZ)
+        if (set) {
+            val changed = voxelStorage.add(posX, posY, posZ)
+            if (changed) aabbGenerator.setVoxel(posX, posY, posZ)
+        } else {
+            val changed = voxelStorage.remove(posX, posY, posZ)
+            if (changed) aabbGenerator.unsetVoxel(posX, posY, posZ)
+        }
     }
 
     override fun getVoxel(posX: Int, posY: Int, posZ: Int): Boolean = voxelStorage.contains(posX, posY, posZ)
@@ -79,4 +84,6 @@ class BasicLayeredTSDF : IVoxelLayeredTSDF {
     }
 
     override fun forEachVoxel(function: (posX: Int, posY: Int, posZ: Int) -> Unit) = voxelStorage.forEach(function)
+
+    override fun getAABB(dest: AABBd): AABBd = aabbGenerator.getAABB(dest)
 }

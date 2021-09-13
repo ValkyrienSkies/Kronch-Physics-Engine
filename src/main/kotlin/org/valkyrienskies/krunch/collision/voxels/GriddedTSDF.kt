@@ -1,6 +1,7 @@
 package org.valkyrienskies.krunch.collision.voxels
 
 import org.joml.Vector3d
+import org.joml.primitives.AABBd
 
 class GriddedTSDF : IVoxelLayeredTSDF {
     private val voxelWorld = LongDataWorld()
@@ -14,6 +15,10 @@ class GriddedTSDF : IVoxelLayeredTSDF {
     }
 
     override fun forEachVoxel(function: (posX: Int, posY: Int, posZ: Int) -> Unit) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getAABB(dest: AABBd): AABBd {
         TODO("Not yet implemented")
     }
 

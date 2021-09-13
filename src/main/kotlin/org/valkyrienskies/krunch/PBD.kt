@@ -363,6 +363,15 @@ private fun generateCollisions(
                 continue // Both bodies are static, don't bother to collide with both of them
             }
 
+            val aabbExpansion = 1.0
+
+            val body0AABB = body0.getAABB().extend(body0.vel).expand(aabbExpansion)
+            val body1AABB = body1.getAABB().extend(body1.vel).expand(aabbExpansion)
+
+            if (!body0AABB.intersectsAABB(body1AABB)) {
+                continue // AABB don't intersect, no collision
+            }
+
             val collisionResult =
                 ColliderResolver.computeCollisionBetweenShapes(
                     body0.shape, body0.pose, body0.vel, body0.omega, body1.shape, body1.pose, body1.vel, body1.omega,

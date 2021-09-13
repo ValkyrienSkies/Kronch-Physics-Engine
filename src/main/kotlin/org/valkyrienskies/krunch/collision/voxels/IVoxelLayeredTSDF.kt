@@ -2,6 +2,7 @@ package org.valkyrienskies.krunch.collision.voxels
 
 import org.joml.Vector3d
 import org.joml.Vector3dc
+import org.joml.primitives.AABBd
 import kotlin.math.roundToInt
 
 interface IVoxelLayeredTSDF {
@@ -16,6 +17,8 @@ interface IVoxelLayeredTSDF {
     fun getVoxel(pos: Vector3dc): Boolean = getVoxel(pos.x(), pos.y(), pos.z())
 
     fun forEachVoxel(function: (posX: Int, posY: Int, posZ: Int) -> Unit)
+
+    fun getAABB(dest: AABBd = AABBd()): AABBd
 
     /**
      * Stores the closest surface point to ([posX], [posY], [posZ]) in [closestPointOutput].

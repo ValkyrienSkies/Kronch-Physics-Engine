@@ -3,6 +3,7 @@ package org.valkyrienskies.krunch
 import org.joml.Quaterniond
 import org.joml.Vector3d
 import org.joml.Vector3dc
+import org.joml.primitives.AABBd
 import org.valkyrienskies.krunch.collision.shapes.CollisionShape
 import org.valkyrienskies.krunch.collision.shapes.SphereShape
 import kotlin.math.abs
@@ -190,6 +191,8 @@ class Body(_pose: Pose) {
 
         function(linearImpulse, angularImpulse)
     }
+
+    fun getAABB(dest: AABBd = AABBd()): AABBd = shape.getAABB(dest).transform(pose)
 
     companion object {
         fun createStaticBody(pose: Pose, shape: CollisionShape, coefficientOfRestitution: Double = .8): Body {
