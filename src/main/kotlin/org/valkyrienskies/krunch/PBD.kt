@@ -7,6 +7,7 @@ import org.valkyrienskies.krunch.SolverType.JACOBI
 import org.valkyrienskies.krunch.collision.CollisionPair
 import org.valkyrienskies.krunch.collision.CollisionResult
 import org.valkyrienskies.krunch.collision.colliders.ColliderResolver
+import org.valkyrienskies.krunch.collision.shapes.TSDFVoxelShape
 import org.valkyrienskies.krunch.constraints.CollisionConstraint
 import org.valkyrienskies.krunch.constraints.PositionConstraint
 import org.valkyrienskies.krunch.constraints.RestitutionConstraint
@@ -16,8 +17,6 @@ import org.valkyrienskies.krunch.solver.JacobiSolver
 import org.valkyrienskies.krunch.solver.Solver
 import kotlin.math.abs
 import kotlin.math.min
-
-// pretty much one-for-one port of https://github.com/matthias-research/pages/blob/master/challenges/PBD.js
 
 const val maxRotationPerSubstep = 0.5
 
@@ -349,8 +348,8 @@ private fun generateCollisions(
     val collisionDataList = ArrayList<CollisionData>()
     for (i in bodies.indices) {
         for (j in i + 1 until bodies.size) {
-            val body0: Body
-            val body1: Body
+            var body0: Body
+            var body1: Body
             if (bodies[i].shape.sortIndex >= bodies[j].shape.sortIndex) {
                 body0 = bodies[i]
                 body1 = bodies[j]
@@ -370,6 +369,15 @@ private fun generateCollisions(
 
             if (!body0AABB.intersectsAABB(body1AABB)) {
                 continue // AABB don't intersect, no collision
+            }
+
+            if (body0.shape is TSDFVoxelShape && body1.shape is TSDFVoxelShape) {
+                if ((body1.shape as TSDFVoxelShape).getVoxelCount() > (body0.shape as TSDFVoxelShape).getVoxelCount()) {
+                    // Body1 should be the shape that has less voxels
+                    val temp = body0
+                    body0 = body1
+                    body1 = temp
+                }
             }
 
             val collisionResult =

@@ -31,6 +31,8 @@ class TSDFVoxelShape : CollisionShape {
         return dest
     }
 
+    fun getVoxelCount(): Long = layeredTSDF.getVoxelCount()
+
     companion object {
         fun createNewVoxelShape(initialVoxels: Iterable<Vector3ic>): TSDFVoxelShape {
             val newVoxelShape = TSDFVoxelShape()

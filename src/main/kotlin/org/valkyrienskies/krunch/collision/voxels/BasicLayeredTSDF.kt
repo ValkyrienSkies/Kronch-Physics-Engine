@@ -67,6 +67,8 @@ class BasicLayeredTSDF : IVoxelLayeredTSDF {
         return validOutput
     }
 
+    override fun getVoxelCount(): Long = voxelStorage.size()
+
     private inline fun computeClosestPoint(
         posX: Double, posY: Double, posZ: Double, voxelX: Int, voxelY: Int, voxelZ: Int,
         function: (absoluteDistance: Double, closestX: Double, closestY: Double, closestZ: Double) -> Unit
