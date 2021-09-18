@@ -142,12 +142,22 @@ private fun createCollisionConstraints(
             val positionDifference = body0PointPosInGlobal.sub(body1PointPosInGlobal, Vector3d())
             val d = it.originalCollisionNormal.dot(positionDifference)
 
-            deepestPoints.add(Pair(it, d))
+            // Determine the deepest points using insertion sort. Since we are only looking for
+            // [settings.maxCollisionPoints] deepest points, it runs in O(N)
+            for (i in 0 until settings.maxCollisionPoints) {
+                if (i >= deepestPoints.size) {
+                    deepestPoints.add(Pair(it, d))
+                    break
+                } else {
+                    val currentPair = deepestPoints[i]
+                    if (currentPair.second < d) {
+                        deepestPoints.add(i, Pair(it, d))
+                        if (deepestPoints.size > settings.maxCollisionPoints) deepestPoints.removeLast()
+                        break
+                    }
+                }
+            }
         }
-
-        // Only use the deepest collision points
-        deepestPoints.sortBy { -it.second }
-        while (deepestPoints.size > settings.maxCollisionPoints) deepestPoints.removeLast()
 
         deepestPoints.forEach { collisionPairAndDepth ->
             val collisionPair = collisionPairAndDepth.first
