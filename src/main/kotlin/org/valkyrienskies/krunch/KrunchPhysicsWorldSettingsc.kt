@@ -16,4 +16,8 @@ interface KrunchPhysicsWorldSettingsc {
 
     // The maximum number of collision points per collision pair used during a sub-step
     val maxCollisionPoints: Int
+
+    // The maximum depth of a collision point before we consider it too deep. If a collision point is too deep we ignore
+    // it to avoid instability.
+    val maxCollisionPointDepth: Double
 }

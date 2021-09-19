@@ -10,5 +10,6 @@ open class KrunchPhysicsWorldSettings(
     override var dynamicFrictionCompliance: Double = 0.0,
     override var speculativeContactDistance: Double = 0.05,
     override var solverType: SolverType = JACOBI,
-    override var maxCollisionPoints: Int = 4
+    override var maxCollisionPoints: Int = 4,
+    override val maxCollisionPointDepth: Double = 0.1
 ) : KrunchPhysicsWorldSettingsc

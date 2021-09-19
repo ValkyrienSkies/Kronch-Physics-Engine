@@ -135,12 +135,17 @@ private fun createCollisionConstraints(
     collisionData.forEach { data ->
         val deepestPoints = ArrayList<Pair<CollisionPair, Double>>()
 
-        data.collisionResult.collisionPoints.forEach {
+        data.collisionResult.collisionPoints.forEach forEachCollisionPoint@{
             val body0PointPosInGlobal = data.body0.pose.transform(Vector3d(it.positionInFirstBody))
             val body1PointPosInGlobal = data.body1.pose.transform(Vector3d(it.positionInSecondBody))
 
             val positionDifference = body0PointPosInGlobal.sub(body1PointPosInGlobal, Vector3d())
             val d = it.originalCollisionNormal.dot(positionDifference)
+
+            // Ignore collision points that are too deep to avoid instability when two bodies get stuck inside each other
+            if (d > settings.maxCollisionPointDepth) {
+                return@forEachCollisionPoint
+            }
 
             // Determine the deepest points using insertion sort. Since we are only looking for
             // [settings.maxCollisionPoints] deepest points, it runs in O(N)
