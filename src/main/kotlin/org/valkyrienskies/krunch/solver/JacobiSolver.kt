@@ -6,9 +6,13 @@ import org.valkyrienskies.krunch.constraints.Constraint
 
 class JacobiSolver : Solver {
 
+    companion object {
+        private const val WEIGHT = .3
+    }
+
     override fun solvePositionConstraints(constraints: List<Constraint>, iterations: Int, dt: Double) {
         for (i in 1..iterations) {
-            val weight = i.toDouble() / (i + 2)
+            val weight = WEIGHT
             constraints.forEach {
                 it.iterate(dt, weight)
             }
@@ -38,7 +42,7 @@ class JacobiSolver : Solver {
 
     override fun solveVelocityConstraints(constraints: List<Constraint>, iterations: Int, dt: Double) {
         for (i in 1..iterations) {
-            val weight = i.toDouble() / (i + 2)
+            val weight = WEIGHT
             constraints.forEach {
                 it.iterate(dt, weight)
             }

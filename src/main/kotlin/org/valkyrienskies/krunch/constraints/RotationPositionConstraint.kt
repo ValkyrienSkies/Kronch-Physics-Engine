@@ -14,13 +14,19 @@ abstract class RotationPositionConstraint(
     private var needsNormal = true
 
     override fun iterate(dt: Double, weight: Double) {
-        if (normal.lengthSquared() == 0.0 && !needsNormal) return
+        if (normal.lengthSquared() == 0.0 && !needsNormal) {
+            prevLambda = lambda
+            return
+        }
 
         val omega = computeRotationCorrection()
 
         if (needsNormal) {
             needsNormal = false
-            if (omega.lengthSquared() < 1e-24) return
+            if (omega.lengthSquared() < 1e-24) {
+                prevLambda = lambda
+                return
+            }
             normal.set(omega).normalize()
         }
 
