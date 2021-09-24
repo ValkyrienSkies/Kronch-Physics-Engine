@@ -72,4 +72,9 @@ class JointAttachmentConstraint(private val joint: Joint) : PositionConstraint {
             }
         }
     }
+
+    override fun forEachBody(function: (body: Body) -> Unit) {
+        joint.body0?.let { function(it) }
+        joint.body1?.let { function(it) }
+    }
 }

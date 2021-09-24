@@ -20,4 +20,6 @@ interface Constraint {
             body: Body, bodyLinearImpulse: Vector3dc?, bodyAngularImpulse: Vector3dc?
         ) -> Unit
     )
+
+    fun forEachBody(function: (body: Body) -> Unit)
 }

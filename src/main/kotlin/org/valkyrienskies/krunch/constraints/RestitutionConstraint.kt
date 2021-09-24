@@ -44,6 +44,11 @@ class RestitutionConstraint(
         }
     }
 
+    override fun forEachBody(function: (body: Body) -> Unit) {
+        function(body0)
+        function(body1)
+    }
+
     override fun iterate(dt: Double, weight: Double) {
         // Don't correct restitution if the collision constraint didn't do anything
         if (collisionConstraint.getForceBetweenContacts() == 0.0) {

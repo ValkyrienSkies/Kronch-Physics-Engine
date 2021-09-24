@@ -78,4 +78,9 @@ abstract class RotationPositionConstraint(
             function(body1, linearImpulse, angularImpulse)
         }
     }
+
+    override fun forEachBody(function: (body: Body) -> Unit) {
+        body0?.let { function(it) }
+        body1?.let { function(it) }
+    }
 }

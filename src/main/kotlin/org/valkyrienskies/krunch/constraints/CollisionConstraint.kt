@@ -45,6 +45,11 @@ class CollisionConstraint(
         }
     }
 
+    override fun forEachBody(function: (body: Body) -> Unit) {
+        function(body0)
+        function(body1)
+    }
+
     override fun iterate(dt: Double, weight: Double) {
         // Update lambda
         val body0PointPosInGlobal = body0.pose.transform(Vector3d(body0ContactPosInBody0Coordinates))
