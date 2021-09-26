@@ -14,6 +14,7 @@ import org.valkyrienskies.krunch.Pose
 import org.valkyrienskies.krunch.collision.shapes.TSDFVoxelShape
 import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.max
 
 class PhysicsWorldChainTest : PhysicsWorld() {
 
@@ -30,6 +31,15 @@ class PhysicsWorldChainTest : PhysicsWorld() {
                     }
                 }
                 groundBodyVoxels.add(Vector3i(x, 0, z))
+            }
+        }
+
+        for (x in -20..20) {
+            for (z in -20..20) {
+                if (abs(x) >= 10 || abs(z) >= 10) {
+                    val y = max(abs(x), 10) + max(abs(z), 10) - 10
+                    groundBodyVoxels.add(Vector3i(x, y, z))
+                }
             }
         }
 
@@ -121,7 +131,15 @@ class PhysicsWorldChainTest : PhysicsWorld() {
         joints.add(firstBoxToSecondBoxJoint)
         joints.add(secondBoxToThirdBoxJoint)
 
-        for (i in 1..5) {
+        for (i in 1..0) {
+            val secondBoxPose = Pose(Vector3d(-1.5, 8.5 + i * 5, 0.0), Quaterniond())
+            val secondBoxBody = Body(secondBoxPose)
+            secondBoxBody.setBox(boxSize)
+            secondBoxBody.shape = singleVoxelShape
+            bodies.add(secondBoxBody)
+        }
+
+        for (i in 1..50) {
             val secondBoxPose = Pose(Vector3d(-1.5, 8.5 + i * 5, 0.0), Quaterniond())
             val secondBoxBody = Body(secondBoxPose)
             secondBoxBody.setBox(boxSize)

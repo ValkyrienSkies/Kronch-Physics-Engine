@@ -19,7 +19,7 @@ class Joint(
     val body1: Body?,
     _localPose0: Pose,
     _localPose1: Pose,
-    val compliance: Double = 0.0,
+    val compliance: Double = 1e-4,
     var rotDamping: Double = 0.0,
     var posDamping: Double = 0.0,
     val hasSwingLimits: Boolean = false,

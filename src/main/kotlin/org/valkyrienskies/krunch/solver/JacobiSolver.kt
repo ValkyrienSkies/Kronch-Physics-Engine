@@ -9,7 +9,7 @@ import org.valkyrienskies.krunch.constraints.Constraint
 class JacobiSolver : Solver {
 
     companion object {
-        private const val WEIGHT = .3
+        private const val WEIGHT = .8
     }
 
     override fun solvePositionConstraints(

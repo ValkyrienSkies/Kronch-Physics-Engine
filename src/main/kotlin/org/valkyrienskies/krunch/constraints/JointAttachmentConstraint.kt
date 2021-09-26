@@ -58,7 +58,7 @@ class JointAttachmentConstraint(private val joint: Joint) : PositionConstraint {
 
         computeGlobalPositions { body0PointPosInGlobal: Vector3dc, body1PointPosInGlobal: Vector3dc ->
             // Use deltaLambda when computing the impulse, since prevLambda has already been added to the bodies.
-            val corr = Vector3d(normal).mul(force)
+            val corr = Vector3d(normal).mul(-force)
 
             joint.body0?.getCorrectionImpulses(corr, body0PointPosInGlobal) { linearImpulse, angularImpulse ->
                 function(joint.body0, linearImpulse, angularImpulse)
