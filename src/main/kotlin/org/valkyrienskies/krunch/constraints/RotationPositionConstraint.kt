@@ -56,6 +56,7 @@ abstract class RotationPositionConstraint(
     abstract fun computeRotationCorrection(): Vector3dc
 
     override fun computeUpdateImpulses(
+        force: Double,
         function: (body: Body, bodyLinearImpulse: Vector3dc?, bodyAngularImpulse: Vector3dc?) -> Unit
     ) {
         if (normal.lengthSquared() == 0.0) return
@@ -64,9 +65,7 @@ abstract class RotationPositionConstraint(
         val body1PointPosInGlobal = null
 
         // Use deltaLambda when computing the impulse, since prevLambda has already been added to the bodies.
-        val deltaLambda = lambda - prevLambda
-
-        val corr = normal.mul(-deltaLambda, Vector3d())
+        val corr = normal.mul(-force, Vector3d())
 
         body0?.getCorrectionImpulses(corr, body0PointPosInGlobal) { linearImpulse, angularImpulse ->
             function(body0, linearImpulse, angularImpulse)

@@ -16,10 +16,29 @@ interface Constraint {
      * Returns the impulses to be applied to each body involved in this constraint.
      */
     fun computeUpdateImpulses(
+        force: Double,
         function: (
             body: Body, bodyLinearImpulse: Vector3dc?, bodyAngularImpulse: Vector3dc?
         ) -> Unit
     )
+
+    /**
+     * Compute the impulses applied from the change between [lambda] and [prevLambda]
+     */
+    fun computeDeltaImpulses(
+        function: (
+            body: Body, bodyLinearImpulse: Vector3dc?, bodyAngularImpulse: Vector3dc?
+        ) -> Unit
+    ) = computeUpdateImpulses(lambda - prevLambda, function)
+
+    /**
+     * Compute the total impulse applied by [lambda]
+     */
+    fun computeTotalImpulses(
+        function: (
+            body: Body, bodyLinearImpulse: Vector3dc?, bodyAngularImpulse: Vector3dc?
+        ) -> Unit
+    ) = computeUpdateImpulses(lambda, function)
 
     fun forEachBody(function: (body: Body) -> Unit)
 

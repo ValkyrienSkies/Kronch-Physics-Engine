@@ -16,7 +16,7 @@ class JointAttachmentConstraint(private val joint: Joint) : PositionConstraint {
         if (normal.lengthSquared() == 0.0) return
 
         computeGlobalPositions { pos0: Vector3dc, pos1: Vector3dc ->
-            val corr = Vector3d(pos0).sub(pos1)
+            val corr = Vector3d(pos1).sub(pos0)
             val deltaLambda =
                 applyBodyPairCorrectionDeltaLambdaOnlyWithRespectToNormal(
                     joint.body0, joint.body1, corr, normal, joint.compliance, dt,
@@ -51,15 +51,14 @@ class JointAttachmentConstraint(private val joint: Joint) : PositionConstraint {
     }
 
     override fun computeUpdateImpulses(
+        force: Double,
         function: (body: Body, bodyLinearImpulse: Vector3dc?, bodyAngularImpulse: Vector3dc?) -> Unit
     ) {
         if (normal.lengthSquared() == 0.0) return
 
         computeGlobalPositions { body0PointPosInGlobal: Vector3dc, body1PointPosInGlobal: Vector3dc ->
             // Use deltaLambda when computing the impulse, since prevLambda has already been added to the bodies.
-            val deltaLambda = lambda - prevLambda
-
-            val corr = Vector3d(normal).mul(deltaLambda)
+            val corr = Vector3d(normal).mul(force)
 
             joint.body0?.getCorrectionImpulses(corr, body0PointPosInGlobal) { linearImpulse, angularImpulse ->
                 function(joint.body0, linearImpulse, angularImpulse)

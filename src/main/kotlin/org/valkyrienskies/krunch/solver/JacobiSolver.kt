@@ -19,7 +19,7 @@ class JacobiSolver : Solver {
             val linearImpulsesToAddMap = HashMap<Body, Vector3d>()
             val angularImpulsesToAddMap = HashMap<Body, Vector3d>()
             constraints.forEach {
-                it.computeUpdateImpulses { body, bodyLinearImpulse, bodyAngularImpulse ->
+                it.computeDeltaImpulses { body, bodyLinearImpulse, bodyAngularImpulse ->
                     // For now, update immediately
                     if (!body.isStatic) {
                         if (bodyLinearImpulse != null)
@@ -49,7 +49,7 @@ class JacobiSolver : Solver {
             val linearImpulsesToAddMap = HashMap<Body, Vector3d>()
             val angularImpulsesToAddMap = HashMap<Body, Vector3d>()
             constraints.forEach {
-                it.computeUpdateImpulses { body, bodyLinearImpulse, bodyAngularImpulse ->
+                it.computeDeltaImpulses { body, bodyLinearImpulse, bodyAngularImpulse ->
                     // For now, update immediately
                     if (!body.isStatic) {
                         if (bodyLinearImpulse != null)

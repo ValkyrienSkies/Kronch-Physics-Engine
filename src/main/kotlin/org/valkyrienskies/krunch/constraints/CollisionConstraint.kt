@@ -4,7 +4,6 @@ import org.joml.Vector3d
 import org.joml.Vector3dc
 import org.valkyrienskies.krunch.Body
 import org.valkyrienskies.krunch.applyBodyPairCorrectionDeltaLambdaOnlyWithRespectToNormal
-import kotlin.math.abs
 import kotlin.math.max
 
 class CollisionConstraint(
@@ -20,6 +19,7 @@ class CollisionConstraint(
     override var prevLambda: Double = 0.0
 
     override fun computeUpdateImpulses(
+        force: Double,
         function: (
             body: Body, bodyLinearImpulse: Vector3dc?, bodyAngularImpulse: Vector3dc?
         ) -> Unit
@@ -27,12 +27,7 @@ class CollisionConstraint(
         val body0PointPosInGlobal = body0.pose.transform(Vector3d(body0ContactPosInBody0Coordinates))
         val body1PointPosInGlobal = body1.pose.transform(Vector3d(body1ContactPosInBody1Coordinates))
 
-        // Use deltaLambda when computing the impulse, since prevLambda has already been added to the bodies.
-        val deltaLambda = lambda - prevLambda
-
-        if (abs(deltaLambda) < 1e-12) return // Skip
-
-        val corr = contactNormalInGlobalCoordinates.mul(-deltaLambda, Vector3d())
+        val corr = contactNormalInGlobalCoordinates.mul(-force, Vector3d())
 
         body0.getCorrectionImpulses(corr, body0PointPosInGlobal) { linearImpulse, angularImpulse ->
             function(body0, linearImpulse, angularImpulse)

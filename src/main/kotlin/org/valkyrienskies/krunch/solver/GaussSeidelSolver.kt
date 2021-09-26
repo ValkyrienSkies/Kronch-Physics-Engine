@@ -14,7 +14,7 @@ class GaussSeidelSolver : Solver {
                 it.iterate(dt, positionConstraintWeight)
 
                 // Update immediately
-                it.computeUpdateImpulses { body, bodyLinearImpulse, bodyAngularImpulse ->
+                it.computeDeltaImpulses { body, bodyLinearImpulse, bodyAngularImpulse ->
                     // For now, update immediately
                     if (!body.isStatic) {
                         if (bodyLinearImpulse != null) body.pose.p.add(bodyLinearImpulse)
@@ -31,7 +31,7 @@ class GaussSeidelSolver : Solver {
                 it.iterate(dt, velocityConstraintWeight)
 
                 // Update immediately
-                it.computeUpdateImpulses { body, bodyLinearImpulse, bodyAngularImpulse ->
+                it.computeDeltaImpulses { body, bodyLinearImpulse, bodyAngularImpulse ->
                     // For now, update immediately
                     if (!body.isStatic) {
                         if (bodyLinearImpulse != null) body.vel.add(bodyLinearImpulse)
