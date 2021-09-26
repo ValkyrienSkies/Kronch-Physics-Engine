@@ -6,8 +6,8 @@ name: Gradle Package
 on:
   push:
     branches:
-      - '*'
-
+      - 'main'
+      - 'fix/solver-divergence'
 
 jobs:
   build:
