@@ -227,7 +227,7 @@ fun simulate(
         positionConstraints.forEach {
             it.reset()
         }
-        solver.solvePositionConstraints(positionConstraints, settings.iterations, dt)
+        solver.solvePositionConstraints(bodies, positionConstraints, settings.iterations, dt)
 
         // Step 2.5, add static friction using a Gauss-Seidel, regardless of [solver].
         // (This gives us unconditional stability)
@@ -241,7 +241,7 @@ fun simulate(
         velocityConstraints.forEach {
             it.reset()
         }
-        solver.solveVelocityConstraints(velocityConstraints, settings.iterations, dt)
+        solver.solveVelocityConstraints(bodies, velocityConstraints, settings.iterations, dt)
 
         // Step 4.5, add dynamic friction using a Gauss-Seidel, regardless of [solver].
         // (This gives us unconditional stability)

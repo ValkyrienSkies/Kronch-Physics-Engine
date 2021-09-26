@@ -1,5 +1,6 @@
 package org.valkyrienskies.krunch.solver
 
+import org.valkyrienskies.krunch.Body
 import org.valkyrienskies.krunch.constraints.Constraint
 
 class GaussSeidelSolver : Solver {
@@ -8,7 +9,9 @@ class GaussSeidelSolver : Solver {
     private val positionConstraintWeight = 1.0
     private val velocityConstraintWeight = 1.0
 
-    override fun solvePositionConstraints(constraints: List<Constraint>, iterations: Int, dt: Double) {
+    override fun solvePositionConstraints(
+        bodies: List<Body>, constraints: List<Constraint>, iterations: Int, dt: Double
+    ) {
         for (i in 1..iterations) {
             constraints.forEach {
                 it.iterate(dt, positionConstraintWeight)
@@ -25,7 +28,9 @@ class GaussSeidelSolver : Solver {
         }
     }
 
-    override fun solveVelocityConstraints(constraints: List<Constraint>, iterations: Int, dt: Double) {
+    override fun solveVelocityConstraints(
+        bodies: List<Body>, constraints: List<Constraint>, iterations: Int, dt: Double
+    ) {
         for (i in 1..iterations) {
             constraints.forEach {
                 it.iterate(dt, velocityConstraintWeight)

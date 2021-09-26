@@ -9,7 +9,7 @@ class Pose(
     override val q: Quaterniond = Quaterniond(0.0, 0.0, 0.0, 1.0)
 ) : Posec {
 
-    fun set(pose: Pose) {
+    fun set(pose: Posec) {
         this.p.set(pose.p)
         this.q.set(pose.q)
     }

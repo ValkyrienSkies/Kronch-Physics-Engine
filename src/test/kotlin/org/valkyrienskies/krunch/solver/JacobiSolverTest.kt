@@ -89,7 +89,7 @@ internal class JacobiSolverTest {
 
         val solver = JacobiSolver()
 
-        solver.solveVelocityConstraints(restitutionConstraints, settings.iterations, dt)
+        solver.solveVelocityConstraints(listOf(body0, body1), restitutionConstraints, settings.iterations, dt)
 
         // Currently output should be:
         // body1.vel = ( 0.000E+0 -2.970E+2  0.000E+0 )
