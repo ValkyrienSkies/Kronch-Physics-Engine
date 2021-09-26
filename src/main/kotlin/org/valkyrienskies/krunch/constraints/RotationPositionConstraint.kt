@@ -8,8 +8,8 @@ import org.valkyrienskies.krunch.applyBodyPairCorrectionDeltaLambdaOnlyWithRespe
 abstract class RotationPositionConstraint(
     private val body0: Body?, private val body1: Body?, private val compliance: Double
 ) : PositionConstraint {
-    private var lambda: Double = 0.0
-    private var prevLambda: Double = 0.0
+    override var lambda: Double = 0.0
+    override var prevLambda: Double = 0.0
     private val normal = Vector3d()
     private var needsNormal = true
 

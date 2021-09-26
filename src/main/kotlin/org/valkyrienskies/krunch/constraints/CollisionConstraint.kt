@@ -16,8 +16,8 @@ class CollisionConstraint(
     private val collisionCompliance: Double
 ) : PositionConstraint {
 
-    internal var lambda: Double = 0.0
-    internal var prevLambda: Double = 0.0
+    override var lambda: Double = 0.0
+    override var prevLambda: Double = 0.0
 
     override fun computeUpdateImpulses(
         function: (

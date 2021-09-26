@@ -8,8 +8,8 @@ import org.valkyrienskies.krunch.applyBodyPairCorrectionDeltaLambdaOnlyWithRespe
 
 class JointAttachmentConstraint(private val joint: Joint) : PositionConstraint {
 
-    private var lambda: Double = 0.0
-    private var prevLambda: Double = 0.0
+    override var lambda: Double = 0.0
+    override var prevLambda: Double = 0.0
     private val normal = Vector3d()
 
     override fun iterate(dt: Double, weight: Double) {

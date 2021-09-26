@@ -17,8 +17,8 @@ class RestitutionConstraint(
     private val collisionConstraint: CollisionConstraint
 ) : VelocityConstraint {
 
-    private var lambda: Double = 0.0
-    private var prevLambda: Double = 0.0
+    override var lambda: Double = 0.0
+    override var prevLambda: Double = 0.0
 
     override fun computeUpdateImpulses(
         function: (

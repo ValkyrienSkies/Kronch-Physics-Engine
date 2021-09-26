@@ -22,4 +22,7 @@ interface Constraint {
     )
 
     fun forEachBody(function: (body: Body) -> Unit)
+
+    val lambda: Double
+    val prevLambda: Double
 }
